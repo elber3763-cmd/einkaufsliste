@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Einkaufsliste</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #43cea2 0%, #185a9d 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            transition: background 0.3s;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+            padding: 30px;
+            width: 100%;
+            max-width: 600px;
+            transition: background 0.3s, box-shadow 0.3s;
+        }
+
+        /* Dark Mode */
+        body.dark-mode {
+            background: linear-gradient(135deg, #232526 0%, #414345 100%);
+        }
+
+        body.dark-mode .container {
+            background: #2d2d44;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+        }
+
+        body.dark-mode h1,
+        body.dark-mode h2,
+        body.dark-mode .auth-message,
+        body.dark-mode .list-item-name,
+        body.dark-mode .artikel-text {
+            color: #eee;
+        }
+
+        body.dark-mode .auth-box {
+            background: #3a3a5a;
+        }
+
+        body.dark-mode .auth-box input,
+        body.dark-mode input[type="text"],
+        body.dark-mode input[type="number"] {
+            background: #4a4a6a;
+            border-color: #6a6a8a;
+            color: #eee;
+        }
+
+        body.dark-mode .liste-row {
+            background: #3a3a5a;
+            border-color: #5a5a7a;
+        }
+
+        body.dark-mode .liste-row:hover {
+            background: #4a4a6a;
+        }
+
+        body.dark-mode .btn {
+            border-color: #aaa;
+            color: #aaa;
+        }
+
+        body.dark-mode .btn-primary {
+            background: #667eea;
+            color: white;
+            border: none;
+        }
+
+        body.dark-mode .modal-overlay {
+            background: rgba(0,0,0,0.7);
+        }
+
+        body.dark-mode .modal {
+            background: #2d2d44;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            color: #333;
+        }
+
+        .header-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 14px;
+            background: transparent;
+            border: 2px solid #ccc;
+            color: #555;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            background: #eee;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            opacity: 0.9;
+        }
+
+        .btn-danger {
+            border-color: #ff6b6b;
+            color: #ff6b6b;
+        }
+
+        .btn-danger:hover {
+            background: #ff6b6b;
+            color: white;
+        }
+
+        /* Auth */
+        .auth-box {
+            background: #f8f9ff;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+
+        .auth-box input {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            font-family: inherit;
+        }
+
+        .auth-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .auth-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .login-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .register-btn {
+            background: #e0e0e0;
+            color: #333;
+        }
+
+        .auth-message {
+            text-align: center;
+            margin-top: 8px;
+            font-size: 14px;
+            min-height: 20px;
+        }
+
+        .error { color: #e74c3c; }
+        .success { color: #4CAF50; }
+
+        .hidden { display: none !important; }
+
+        /* Listen-Übersicht */
+        .liste-row {
+            background: #f8f9ff;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .liste-row:hover {
+            background: #f0f2ff;
+        }
+
+        .liste-actions {
+            display: flex;
+            gap: 5px;
+        }
+
+        /* Artikel */
+        .artikel-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .artikel-checkbox {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .artikel-text {
+            flex: 1;
+            font-size: 16px;
+            color: #333;
+        }
+
+        .artikel-text.erledigt {
+            text-decoration: line-through;
+            color: #999;
+        }
+
+        .artikel-menge {
+            width: 80px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .artikel-actions {
+            display: flex;
+            gap: 5px;
+        }
+
+        .neue-liste-form,
+        .neuer-artikel-form {
+            display: flex;
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .neue-liste-form input,
+        .neuer-artikel-form input {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        .back-btn {
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🛒 Einkaufsliste</h1>
+            <div class="header-buttons">
+                <button id="darkModeToggle" class="btn" onclick="toggleDarkMode()">🌙</button>
+                <button id="logoutBtn" class="btn btn-danger hidden" onclick="logout()">Logout</button>
+            </div>
+        </div>
+
+        <!-- Auth -->
+        <div id="authBox" class="auth-box">
+            <input type="email" id="authEmail" placeholder="E-Mail" autocomplete="email">
+            <input type="password" id="authPassword" placeholder="Passwort" autocomplete="current-password">
+            <div class="auth-buttons">
+                <button class="auth-btn login-btn" onclick="login()">Anmelden</button>
+                <button class="auth-btn register-btn" onclick="register()">Registrieren</button>
+            </div>
+            <div id="authMessage" class="auth-message"></div>
+        </div>
+
+        <!-- Hauptansicht (nach Login) -->
+        <div id="appContent" class="hidden">
+            <!-- Listen-Übersicht -->
+            <div id="listenView">
+                <h2>Meine Listen</h2>
+                <div class="neue-liste-form">
+                    <input type="text" id="neueListeInput" placeholder="Neue Liste...">
+                    <button class="btn btn-primary" onclick="neueListe()">➕</button>
+                </div>
+                <div id="listenContainer"></div>
+            </div>
+
+            <!-- Artikel-Ansicht (Detail) -->
+            <div id="artikelView" class="hidden">
+                <button class="btn back-btn" onclick="zurueckZuListen()">← Zurück</button>
+                <h2 id="aktuelleListeName"></h2>
+                <div class="neuer-artikel-form">
+                    <input type="text" id="neuerArtikelName" placeholder="Artikelname">
+                    <input type="text" id="neuerArtikelMenge" placeholder="Menge (z.B. 2 Stk.)" style="max-width:150px;">
+                    <button class="btn btn-primary" onclick="neuerArtikel()">➕</button>
+                </div>
+                <div id="artikelContainer"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'https://einkaufsliste-api.elber3763.workers.dev/api';
+        let listen = [];
+        let aktuelleListeId = null;
+        let artikel = [];
+
+        // Dark Mode
+        function initDarkMode() {
+            const saved = localStorage.getItem('darkMode');
+            if (saved === 'true') {
+                document.body.classList.add('dark-mode');
+                document.getElementById('darkModeToggle').textContent = '☀️';
+            }
+        }
+        function toggleDarkMode() {
+            const isDark = document.body.classList.toggle('dark-mode');
+            localStorage.setItem('darkMode', isDark);
+            document.getElementById('darkModeToggle').textContent = isDark ? '☀️' : '🌙';
+        }
+
+        async function apiCall(url, options = {}) {
+            const token = localStorage.getItem('token');
+            if (token) {
+                options.headers = options.headers || {};
+                options.headers['Authorization'] = 'Bearer ' + token;
+            }
+            return fetch(url, options);
+        }
+
+        window.onload = function() {
+            initDarkMode();
+            if (localStorage.getItem('token')) nachLogin();
+        };
+
+        async function register() {
+            const email = document.getElementById('authEmail').value.trim();
+            const password = document.getElementById('authPassword').value;
+            const msg = document.getElementById('authMessage');
+            if (!email || !password) { msg.textContent = 'Bitte ausfüllen.'; msg.className = 'auth-message error'; return; }
+            try {
+                const resp = await fetch(API_URL + '/register', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                if (resp.ok) {
+                    msg.textContent = 'Registrierung erfolgreich. Melde dich an.';
+                    msg.className = 'auth-message success';
+                } else if (resp.status === 409) {
+                    msg.textContent = 'E-Mail bereits registriert.';
+                    msg.className = 'auth-message error';
+                } else {
+                    msg.textContent = 'Fehler.';
+                    msg.className = 'auth-message error';
+                }
+            } catch { msg.textContent = 'Server nicht erreichbar.'; msg.className = 'auth-message error'; }
+        }
+
+        async function login() {
+            const email = document.getElementById('authEmail').value.trim();
+            const password = document.getElementById('authPassword').value;
+            const msg = document.getElementById('authMessage');
+            if (!email || !password) { msg.textContent = 'Bitte ausfüllen.'; msg.className = 'auth-message error'; return; }
+            try {
+                const resp = await fetch(API_URL + '/login', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                if (resp.ok) {
+                    const data = await resp.json();
+                    localStorage.setItem('token', data.token);
+                    msg.textContent = '';
+                    nachLogin();
+                } else {
+                    msg.textContent = 'Ungültige Anmeldedaten.';
+                    msg.className = 'auth-message error';
+                }
+            } catch { msg.textContent = 'Server nicht erreichbar.'; msg.className = 'auth-message error'; }
+        }
+
+        function nachLogin() {
+            document.getElementById('authBox').classList.add('hidden');
+            document.getElementById('logoutBtn').classList.remove('hidden');
+            document.getElementById('appContent').classList.remove('hidden');
+            loadListen();
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            location.reload();
+        }
+
+        // ---- Listen ----
+        async function loadListen() {
+            try {
+                const resp = await apiCall(API_URL + '/listen');
+                if (resp.ok) {
+                    listen = await resp.json();
+                    renderListen();
+                }
+            } catch { }
+        }
+
+        function renderListen() {
+            const container = document.getElementById('listenContainer');
+            container.innerHTML = '';
+            listen.forEach(liste => {
+                const div = document.createElement('div'); div.className = 'liste-row';
+                div.setAttribute('data-listen-id', liste.id);
+                const span = document.createElement('span'); span.className = 'list-item-name'; span.textContent = liste.name;
+                const actions = document.createElement('div'); actions.className = 'liste-actions';
+                const delBtn = document.createElement('button'); delBtn.textContent = '🗑️'; delBtn.className = 'btn';
+                delBtn.onclick = (e) => { e.stopPropagation(); deleteListe(liste.id); };
+                actions.appendChild(delBtn);
+                div.appendChild(span); div.appendChild(actions);
+                div.onclick = () => oeffneListe(liste.id, liste.name);
+                container.appendChild(div);
+            });
+        }
+
+        async function neueListe() {
+            const input = document.getElementById('neueListeInput');
+            const name = input.value.trim();
+            if (!name) return alert('Name eingeben!');
+            try {
+                const resp = await apiCall(API_URL + '/listen', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name })
+                });
+                if (resp.ok) {
+                    input.value = '';
+                    await loadListen();
+                }
+            } catch { alert('Fehler.'); }
+        }
+
+        async function deleteListe(id) {
+            if (!confirm('Liste wirklich löschen?')) return;
+            try {
+                await apiCall(API_URL + '/listen/' + id, { method: 'DELETE' });
+                await loadListen();
+            } catch { alert('Fehler beim Löschen.'); }
+        }
+
+        // ---- Artikel ----
+        function oeffneListe(id, name) {
+            aktuelleListeId = id;
+            document.getElementById('listenView').classList.add('hidden');
+            document.getElementById('artikelView').classList.remove('hidden');
+            document.getElementById('aktuelleListeName').textContent = '📋 ' + name;
+            loadArtikel();
+        }
+
+        function zurueckZuListen() {
+            document.getElementById('artikelView').classList.add('hidden');
+            document.getElementById('listenView').classList.remove('hidden');
+            loadListen();
+        }
+
+        async function loadArtikel() {
+            try {
+                const resp = await apiCall(API_URL + '/listen/' + aktuelleListeId + '/artikel');
+                if (resp.ok) {
+                    artikel = await resp.json();
+                    renderArtikel();
+                }
+            } catch { }
+        }
+
+        function renderArtikel() {
+            const container = document.getElementById('artikelContainer');
+            container.innerHTML = '';
+            artikel.forEach(a => {
+                const div = document.createElement('div'); div.className = 'artikel-item';
+                const cb = document.createElement('input'); cb.type = 'checkbox'; cb.className = 'artikel-checkbox';
+                cb.checked = a.erledigt === 1;
+                cb.onchange = () => toggleArtikel(a.id, !cb.checked);
+                const span = document.createElement('span'); span.className = 'artikel-text' + (a.erledigt ? ' erledigt' : '');
+                span.textContent = a.name;
+                const menge = document.createElement('span'); menge.className = 'artikel-menge'; menge.textContent = a.menge || '';
+                const delBtn = document.createElement('button'); delBtn.textContent = '🗑️'; delBtn.className = 'btn';
+                delBtn.onclick = () => deleteArtikel(a.id);
+                div.appendChild(cb); div.appendChild(span); div.appendChild(menge); div.appendChild(delBtn);
+                container.appendChild(div);
+            });
+        }
+
+        async function neuerArtikel() {
+            const nameInput = document.getElementById('neuerArtikelName');
+            const mengeInput = document.getElementById('neuerArtikelMenge');
+            const name = nameInput.value.trim();
+            const menge = mengeInput.value.trim();
+            if (!name) return alert('Name eingeben!');
+            try {
+                const resp = await apiCall(API_URL + '/listen/' + aktuelleListeId + '/artikel', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, menge })
+                });
+                if (resp.ok) {
+                    nameInput.value = '';
+                    mengeInput.value = '';
+                    await loadArtikel();
+                }
+            } catch { alert('Fehler.'); }
+        }
+
+        async function toggleArtikel(id, aktuellErledigt) {
+            try {
+                await apiCall(API_URL + '/artikel/' + id, {
+                    method: 'PUT', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ erledigt: !aktuellErledigt })
+                });
+                const a = artikel.find(x => x.id === id);
+                if (a) a.erledigt = !aktuellErledigt ? 1 : 0;
+                renderArtikel();
+            } catch { alert('Fehler beim Aktualisieren.'); }
+        }
+
+        async function deleteArtikel(id) {
+            try {
+                await apiCall(API_URL + '/artikel/' + id, { method: 'DELETE' });
+                await loadArtikel();
+            } catch { alert('Fehler beim Löschen.'); }
+        }
+    </script>
+</body>
+</html>
