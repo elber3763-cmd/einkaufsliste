@@ -172,6 +172,17 @@
             background: rgba(255, 255, 255, 0.18);
         }
 
+        .btn-aktivitaeten {
+            background: transparent;
+            border: 2px solid #90caf9;
+            color: #1976d2;
+        }
+
+        body.dark-mode .btn-aktivitaeten {
+            border-color: #64b5f6;
+            color: #90caf9;
+        }
+
         /* Auth Box */
         .auth-box {
             background: rgba(248, 249, 255, 0.8);
@@ -437,6 +448,32 @@
             color: #ff8a80;
         }
 
+        .artikel-autor {
+            font-size: 11px;
+            color: #888;
+            margin-left: 8px;
+            white-space: nowrap;
+        }
+
+        .faellig-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            margin-left: 12px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #e53935;
+            background: rgba(255, 138, 128, 0.15);
+            padding: 4px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+
+        body.dark-mode .faellig-badge {
+            color: #ff8a80;
+            background: rgba(255, 138, 128, 0.25);
+        }
+
         .sort-row {
             display: flex;
             align-items: center;
@@ -575,10 +612,19 @@
             border-top: 1px solid #e0e0e0;
         }
 
-        .share-email-result {
+        .share-email-result,
+        .aktivitaet-eintrag {
             font-size: 13px;
-            min-height: 20px;
             margin-top: 5px;
+        }
+
+        .aktivitaet-eintrag {
+            border-bottom: 1px solid #eee;
+            padding: 8px 0;
+        }
+
+        body.dark-mode .aktivitaet-eintrag {
+            border-bottom-color: #555;
         }
 
         /* Listen-Header */
@@ -699,7 +745,7 @@
                 <button class="btn back-btn" onclick="zurueckZuListen()">← Zurück</button>
                 <h2 id="aktuelleListeName"></h2>
 
-                <!-- Sortierung & Auswahl‑Modus -->
+                <!-- Sortierung & Auswahl‑Modus & Aktivitäten -->
                 <div class="sort-row">
                     <label for="sortSelect">Sortierung:</label>
                     <select id="sortSelect" onchange="loadArtikel()">
@@ -709,6 +755,8 @@
                         <option value="faellig">Fälligkeit (Nächste zuerst)</option>
                     </select>
                     <button id="toggleSelectionBtn" class="btn btn-selection" onclick="toggleSelectionMode()">✏️ Auswahl</button>
+                    <button class="btn btn-aktivitaeten" onclick="openAktivitaetenModal()">📜 Aktivitäten</button>
+                    <span id="faelligBadge" class="faellig-badge hidden" onclick="filterFaellig()">⚠️ <span id="faelligCount">0</span> überfällig</span>
                 </div>
 
                 <!-- Bulk‑Aktionsleiste (im Auswahl‑Modus sichtbar) -->
@@ -750,6 +798,15 @@
         </div>
     </div>
 
+    <!-- Modal für Aktivitäten-Feed -->
+    <div id="aktivitaetenModal" class="modal-overlay hidden">
+        <div class="modal">
+            <button class="close-modal" onclick="closeAktivitaetenModal()">✖</button>
+            <h3>📜 Aktivitäten</h3>
+            <div id="aktivitaetenContainer"></div>
+        </div>
+    </div>
+
     <script>
         const API_URL = 'https://einkaufsliste-api.elber3763.workers.dev/api';
         let listen = [];
@@ -757,6 +814,7 @@
         let artikel = [];
         let selectionMode = false;
         let selectedIds = new Set();
+        let aktuellerBenutzerEmail = '';
 
         // Dark Mode
         function initDarkMode() {
@@ -791,7 +849,6 @@
                 if (resp.ok) {
                     const data = await resp.json();
                     alert('Du bist der Liste erfolgreich beigetreten!');
-                    // Parameter aus URL entfernen
                     window.history.replaceState({}, document.title, window.location.pathname);
                     loadListen();
                 } else {
@@ -806,6 +863,7 @@
         window.onload = function() {
             initDarkMode();
             if (localStorage.getItem('token')) {
+                aktuellerBenutzerEmail = localStorage.getItem('userEmail') || '';
                 nachLogin();
                 checkJoinToken();
             }
@@ -847,6 +905,8 @@
                 if (resp.ok) {
                     const data = await resp.json();
                     localStorage.setItem('token', data.token);
+                    localStorage.setItem('userEmail', data.email);
+                    aktuellerBenutzerEmail = data.email;
                     msg.textContent = '';
                     nachLogin();
                     checkJoinToken();
@@ -866,6 +926,7 @@
 
         function logout() {
             localStorage.removeItem('token');
+            localStorage.removeItem('userEmail');
             location.reload();
         }
 
@@ -954,12 +1015,11 @@
             } catch { alert('Fehler beim Verlassen.'); }
         }
 
-        // ---- Teilen-Modal (Link + E‑Mail) ----
+        // ---- Teilen-Modal ----
         let shareListeId = null;
 
         async function openShareModal(listeId) {
             shareListeId = listeId;
-            // Link generieren
             try {
                 const resp = await apiCall(API_URL + '/listen/' + listeId + '/teilen', { method: 'POST' });
                 if (resp.ok) {
@@ -971,7 +1031,6 @@
             } catch {
                 document.getElementById('shareLinkInput').value = 'Server nicht erreichbar';
             }
-            // E‑Mail‑Feld leeren
             document.getElementById('shareEmailInput').value = '';
             document.getElementById('shareEmailResult').textContent = '';
             document.getElementById('copyConfirmation').classList.add('hidden');
@@ -1028,6 +1087,39 @@
             }
         }
 
+        // ---- Aktivitäten-Modal ----
+        async function openAktivitaetenModal() {
+            document.getElementById('aktivitaetenModal').classList.remove('hidden');
+            const container = document.getElementById('aktivitaetenContainer');
+            container.innerHTML = 'Lade...';
+            try {
+                const resp = await apiCall(API_URL + '/listen/' + aktuelleListeId + '/aktivitaeten');
+                if (resp.ok) {
+                    const aktivitaeten = await resp.json();
+                    container.innerHTML = '';
+                    if (aktivitaeten.length === 0) {
+                        container.innerHTML = '<p>Keine Aktivitäten bisher.</p>';
+                    } else {
+                        aktivitaeten.forEach(a => {
+                            const div = document.createElement('div');
+                            div.className = 'aktivitaet-eintrag';
+                            const zeit = new Date(a.zeitpunkt).toLocaleString('de-DE');
+                            div.innerHTML = `<strong>${a.username}</strong> ${a.details} <br><small>${zeit}</small>`;
+                            container.appendChild(div);
+                        });
+                    }
+                } else {
+                    container.innerHTML = 'Fehler beim Laden.';
+                }
+            } catch {
+                container.innerHTML = 'Server nicht erreichbar.';
+            }
+        }
+
+        function closeAktivitaetenModal() {
+            document.getElementById('aktivitaetenModal').classList.add('hidden');
+        }
+
         // ---- Artikel ----
         function oeffneListe(id, name) {
             aktuelleListeId = id;
@@ -1055,9 +1147,37 @@
                     artikel = await resp.json();
                     selectedIds.clear();
                     updateSelectionUI();
+                    updateFaelligBadge();
                     renderArtikel();
                 }
             } catch { }
+        }
+
+        function updateFaelligBadge() {
+            const heute = new Date();
+            heute.setHours(0, 0, 0, 0);
+            let count = 0;
+            artikel.forEach(a => {
+                if (a.faellig_am) {
+                    const faellig = new Date(a.faellig_am);
+                    faellig.setHours(0, 0, 0, 0);
+                    if (faellig < heute) count++;
+                }
+            });
+            const badge = document.getElementById('faelligBadge');
+            const countSpan = document.getElementById('faelligCount');
+            if (count > 0) {
+                badge.classList.remove('hidden');
+                countSpan.textContent = count;
+            } else {
+                badge.classList.add('hidden');
+            }
+        }
+
+        function filterFaellig() {
+            // Sortierung auf Fälligkeit setzen, um überfällige zuerst zu sehen
+            document.getElementById('sortSelect').value = 'faellig';
+            loadArtikel();
         }
 
         // ---- Bulk‑Aktionen ----
@@ -1189,6 +1309,13 @@
                     datumSpan.textContent = '📅 ' + d.toLocaleDateString('de-DE');
                 }
 
+                // Autor anzeigen
+                const autorSpan = document.createElement('span');
+                autorSpan.className = 'artikel-autor';
+                if (a.added_by_username) {
+                    autorSpan.textContent = a.added_by_username === aktuellerBenutzerEmail ? 'von dir' : 'von ' + a.added_by_username;
+                }
+
                 const delBtn = document.createElement('button');
                 delBtn.textContent = '🗑️';
                 delBtn.className = 'btn';
@@ -1198,6 +1325,7 @@
                 div.appendChild(span);
                 div.appendChild(menge);
                 div.appendChild(datumSpan);
+                div.appendChild(autorSpan);
                 if (!selectionMode) {
                     div.appendChild(delBtn);
                 }
