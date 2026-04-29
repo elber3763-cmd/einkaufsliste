@@ -737,10 +737,6 @@
             const params = new URLSearchParams(window.location.search);
             const token = params.get('join');
             if (!token) return;
-            if (!localStorage.getItem('token')) {
-                alert('Bitte melde dich zuerst an, um der Liste beizutreten.');
-                return;
-            }
             try {
                 const resp = await apiCall(`${API_URL}/listen/beitreten/${token}`);
                 if (resp.ok) {
@@ -804,6 +800,7 @@
                     localStorage.setItem('token', data.token);
                     msg.textContent = '';
                     nachLogin();
+                    // Wichtig: Beitritt nach erfolgreichem Login ausführen
                     checkJoinToken();
                 } else {
                     msg.textContent = 'Ungültige Anmeldedaten.';
