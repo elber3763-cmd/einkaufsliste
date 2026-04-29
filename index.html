@@ -570,6 +570,17 @@
             cursor: pointer;
         }
 
+        .modal-divider {
+            margin: 20px 0;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .share-email-result {
+            font-size: 13px;
+            min-height: 20px;
+            margin-top: 5px;
+        }
+
         /* Listen-Header */
         h2 {
             font-size: 1.5rem;
@@ -719,7 +730,7 @@
         </div>
     </div>
 
-    <!-- Modal für Freigabe-Link -->
+    <!-- Modal für Freigabe-Link UND E-Mail-Freigabe -->
     <div id="shareModal" class="modal-overlay hidden">
         <div class="modal">
             <button class="close-modal" onclick="closeShareModal()">✖</button>
@@ -728,6 +739,14 @@
             <input type="text" id="shareLinkInput" readonly>
             <button class="btn btn-primary" onclick="copyShareLink()">📋 Link kopieren</button>
             <span id="copyConfirmation" style="margin-left:10px;font-size:13px;color:#4CAF50;" class="hidden">Kopiert!</span>
+
+            <div class="modal-divider"></div>
+
+            <h3>📧 Per E-Mail teilen</h3>
+            <p style="margin-bottom:10px;font-size:14px;">Gib die registrierte E-Mail-Adresse des Nutzers ein, um die Liste direkt mit ihm zu teilen.</p>
+            <input type="email" id="shareEmailInput" placeholder="E-Mail-Adresse">
+            <button class="btn btn-primary" onclick="shareViaEmail()">Teilen</button>
+            <div id="shareEmailResult" class="share-email-result"></div>
         </div>
     </div>
 
@@ -935,26 +954,32 @@
             } catch { alert('Fehler beim Verlassen.'); }
         }
 
-        // ---- Teilen-Modal ----
-        let shareToken = null;
+        // ---- Teilen-Modal (Link + E‑Mail) ----
+        let shareListeId = null;
 
         async function openShareModal(listeId) {
+            shareListeId = listeId;
+            // Link generieren
             try {
                 const resp = await apiCall(API_URL + '/listen/' + listeId + '/teilen', { method: 'POST' });
                 if (resp.ok) {
                     const data = await resp.json();
                     document.getElementById('shareLinkInput').value = data.link;
-                    document.getElementById('shareModal').classList.remove('hidden');
-                    shareToken = data.token;
                 } else {
-                    alert('Fehler beim Erzeugen des Links.');
+                    document.getElementById('shareLinkInput').value = 'Fehler';
                 }
-            } catch { alert('Server nicht erreichbar.'); }
+            } catch {
+                document.getElementById('shareLinkInput').value = 'Server nicht erreichbar';
+            }
+            // E‑Mail‑Feld leeren
+            document.getElementById('shareEmailInput').value = '';
+            document.getElementById('shareEmailResult').textContent = '';
+            document.getElementById('copyConfirmation').classList.add('hidden');
+            document.getElementById('shareModal').classList.remove('hidden');
         }
 
         function closeShareModal() {
             document.getElementById('shareModal').classList.add('hidden');
-            document.getElementById('copyConfirmation').classList.add('hidden');
         }
 
         function copyShareLink() {
@@ -966,6 +991,41 @@
             setTimeout(() => {
                 document.getElementById('copyConfirmation').classList.add('hidden');
             }, 2000);
+        }
+
+        async function shareViaEmail() {
+            const email = document.getElementById('shareEmailInput').value.trim();
+            const resultDiv = document.getElementById('shareEmailResult');
+            if (!email) {
+                resultDiv.textContent = 'Bitte eine E-Mail-Adresse eingeben.';
+                resultDiv.className = 'share-email-result error';
+                return;
+            }
+
+            try {
+                const resp = await apiCall(API_URL + '/listen/' + shareListeId + '/teilen-mit', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: email })
+                });
+                if (resp.ok) {
+                    resultDiv.textContent = '✅ Liste erfolgreich geteilt!';
+                    resultDiv.className = 'share-email-result success';
+                    document.getElementById('shareEmailInput').value = '';
+                } else if (resp.status === 404) {
+                    resultDiv.textContent = '❌ Benutzer nicht gefunden.';
+                    resultDiv.className = 'share-email-result error';
+                } else if (resp.status === 409) {
+                    resultDiv.textContent = '❌ Liste ist bereits geteilt.';
+                    resultDiv.className = 'share-email-result error';
+                } else {
+                    resultDiv.textContent = '❌ Fehler beim Teilen.';
+                    resultDiv.className = 'share-email-result error';
+                }
+            } catch {
+                resultDiv.textContent = '❌ Server nicht erreichbar.';
+                resultDiv.className = 'share-email-result error';
+            }
         }
 
         // ---- Artikel ----
