@@ -97,7 +97,7 @@
         }
 
         .btn:active {
-            transform: translateY(0);
+            transform: scale(0.96);
             box-shadow: none;
         }
 
@@ -122,6 +122,10 @@
             box-shadow: 0 12px 28px rgba(102, 126, 234, 0.35);
         }
 
+        .btn-primary:active {
+            transform: scale(0.96);
+        }
+
         .btn-danger {
             border-color: #ff8a80;
             color: #e53935;
@@ -131,6 +135,10 @@
             background: #ff8a80;
             color: white;
             border-color: transparent;
+        }
+
+        .btn-danger:active {
+            transform: scale(0.96);
         }
 
         body.dark-mode .btn-danger {
@@ -210,6 +218,10 @@
             transform: translateY(-1px);
         }
 
+        .login-btn:active {
+            transform: scale(0.96);
+        }
+
         .register-btn {
             background: rgba(0, 0, 0, 0.05);
             color: #444;
@@ -218,6 +230,10 @@
         body.dark-mode .register-btn {
             background: rgba(255, 255, 255, 0.08);
             color: #ddd;
+        }
+
+        .register-btn:active {
+            transform: scale(0.96);
         }
 
         .auth-message {
@@ -255,6 +271,10 @@
             transform: translateY(-2px);
         }
 
+        .liste-row:active {
+            transform: scale(0.99);
+        }
+
         body.dark-mode .liste-row {
             background: rgba(255, 255, 255, 0.08);
             border-color: rgba(255, 255, 255, 0.08);
@@ -276,8 +296,36 @@
             gap: 14px;
             padding: 16px 0;
             border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-            transition: background 0.2s;
+            transition: background 0.2s, padding-left 0.2s;
             flex-wrap: wrap;
+            position: relative;
+        }
+
+        .artikel-item:last-child {
+            border-bottom: none;
+        }
+
+        .artikel-item:hover {
+            background: rgba(0, 0, 0, 0.015);
+        }
+
+        body.dark-mode .artikel-item:hover {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        /* Erledigte Artikel spezial behandeln */
+        .artikel-item.erledigt {
+            opacity: 0.85;
+        }
+
+        .artikel-item.erledigt + .artikel-item:not(.erledigt) {
+            margin-top: 8px;
+            padding-top: 20px;
+            border-top: 1px dashed rgba(0, 0, 0, 0.1);
+        }
+
+        body.dark-mode .artikel-item.erledigt + .artikel-item:not(.erledigt) {
+            border-top-color: rgba(255, 255, 255, 0.1);
         }
 
         body.dark-mode .artikel-item {
@@ -291,11 +339,15 @@
             cursor: pointer;
             accent-color: #667eea;
             transform: scale(1.1);
-            transition: transform 0.15s;
+            transition: transform 0.15s, opacity 0.2s;
         }
 
         .artikel-checkbox:hover {
             transform: scale(1.25);
+        }
+
+        .artikel-item.erledigt .artikel-checkbox {
+            opacity: 0.6;
         }
 
         .artikel-text {
@@ -305,10 +357,13 @@
             color: #333;
             word-break: break-word;
             min-width: 120px;
+            transition: color 0.2s, text-decoration 0.2s;
         }
 
         .artikel-text.erledigt {
             text-decoration: line-through;
+            text-decoration-thickness: 2px;
+            text-decoration-color: rgba(0,0,0,0.25);
             color: #aaa;
         }
 
@@ -318,6 +373,7 @@
 
         body.dark-mode .artikel-text.erledigt {
             color: #777;
+            text-decoration-color: rgba(255,255,255,0.2);
         }
 
         .artikel-menge {
@@ -395,7 +451,7 @@
         ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 10px; }
         body.dark-mode ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); }
 
-        /* ---- Responsive Optimierungen ---- */
+        /* Responsive */
         @media (max-width: 480px) {
             body {
                 padding: 12px;
@@ -675,16 +731,32 @@
             const container = document.getElementById('artikelContainer');
             container.innerHTML = '';
             artikel.forEach(a => {
-                const div = document.createElement('div'); div.className = 'artikel-item';
-                const cb = document.createElement('input'); cb.type = 'checkbox'; cb.className = 'artikel-checkbox';
+                const div = document.createElement('div');
+                div.className = 'artikel-item' + (a.erledigt === 1 ? ' erledigt' : '');
+
+                const cb = document.createElement('input');
+                cb.type = 'checkbox';
+                cb.className = 'artikel-checkbox';
                 cb.checked = a.erledigt === 1;
                 cb.onchange = () => toggleArtikel(a.id, !cb.checked);
-                const span = document.createElement('span'); span.className = 'artikel-text' + (a.erledigt ? ' erledigt' : '');
+
+                const span = document.createElement('span');
+                span.className = 'artikel-text' + (a.erledigt ? ' erledigt' : '');
                 span.textContent = a.name;
-                const menge = document.createElement('span'); menge.className = 'artikel-menge'; menge.textContent = a.menge || '';
-                const delBtn = document.createElement('button'); delBtn.textContent = '🗑️'; delBtn.className = 'btn';
+
+                const menge = document.createElement('span');
+                menge.className = 'artikel-menge';
+                menge.textContent = a.menge || '';
+
+                const delBtn = document.createElement('button');
+                delBtn.textContent = '🗑️';
+                delBtn.className = 'btn';
                 delBtn.onclick = () => deleteArtikel(a.id);
-                div.appendChild(cb); div.appendChild(span); div.appendChild(menge); div.appendChild(delBtn);
+
+                div.appendChild(cb);
+                div.appendChild(span);
+                div.appendChild(menge);
+                div.appendChild(delBtn);
                 container.appendChild(div);
             });
         }
