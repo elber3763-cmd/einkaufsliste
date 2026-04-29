@@ -151,6 +151,26 @@
             color: #1e1e2f;
         }
 
+        .btn-selection {
+            background: rgba(255, 255, 255, 0.7);
+            border: 1px solid #90caf9;
+            color: #1976d2;
+        }
+
+        body.dark-mode .btn-selection {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: #64b5f6;
+            color: #90caf9;
+        }
+
+        .btn-selection:hover {
+            background: rgba(255, 255, 255, 0.95);
+        }
+
+        body.dark-mode .btn-selection:hover {
+            background: rgba(255, 255, 255, 0.18);
+        }
+
         /* Auth Box */
         .auth-box {
             background: rgba(248, 249, 255, 0.8);
@@ -330,7 +350,8 @@
             border-bottom-color: rgba(255, 255, 255, 0.08);
         }
 
-        .artikel-checkbox {
+        .artikel-checkbox,
+        .auswahl-checkbox {
             width: 24px;
             height: 24px;
             min-width: 24px;
@@ -340,12 +361,13 @@
             transition: transform 0.15s, opacity 0.2s;
         }
 
-        .artikel-checkbox:hover {
+        .artikel-checkbox:hover,
+        .auswahl-checkbox:hover {
             transform: scale(1.25);
         }
 
-        .artikel-item.erledigt .artikel-checkbox {
-            opacity: 0.6;
+        .auswahl-checkbox {
+            margin-right: 4px;
         }
 
         .artikel-text {
@@ -420,6 +442,25 @@
             background: rgba(255, 255, 255, 0.1);
             border-color: rgba(255, 255, 255, 0.15);
             color: #eee;
+        }
+
+        /* Bulk‑Aktionen Leiste */
+        .bulk-bar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 18px;
+            flex-wrap: wrap;
+        }
+
+        .bulk-bar span {
+            font-size: 14px;
+            font-weight: 500;
+            color: #444;
+        }
+
+        body.dark-mode .bulk-bar span {
+            color: #ccc;
         }
 
         .neue-liste-form,
@@ -532,7 +573,8 @@
                 padding: 8px 14px;
                 font-size: 13px;
             }
-            .artikel-checkbox {
+            .artikel-checkbox,
+            .auswahl-checkbox {
                 width: 22px;
                 height: 22px;
             }
@@ -578,7 +620,7 @@
                 <button class="btn back-btn" onclick="zurueckZuListen()">← Zurück</button>
                 <h2 id="aktuelleListeName"></h2>
 
-                <!-- Sortier-Dropdown -->
+                <!-- Sortierung & Auswahl‑Modus -->
                 <div class="sort-row">
                     <label for="sortSelect">Sortierung:</label>
                     <select id="sortSelect" onchange="loadArtikel()">
@@ -586,6 +628,15 @@
                         <option value="name">Name (A–Z)</option>
                         <option value="erledigt">Status (Offen zuerst)</option>
                     </select>
+                    <button id="toggleSelectionBtn" class="btn btn-selection" onclick="toggleSelectionMode()">✏️ Auswahl</button>
+                </div>
+
+                <!-- Bulk‑Aktionsleiste (im Auswahl‑Modus sichtbar) -->
+                <div id="bulkBar" class="bulk-bar hidden">
+                    <button class="btn" onclick="selectAll()">Alle auswählen</button>
+                    <button class="btn" onclick="bulkToggle()">Erledigt umschalten</button>
+                    <button class="btn btn-danger" onclick="bulkDelete()">Löschen</button>
+                    <span id="selectedCount"></span>
                 </div>
 
                 <div class="neuer-artikel-form">
@@ -603,6 +654,8 @@
         let listen = [];
         let aktuelleListeId = null;
         let artikel = [];
+        let selectionMode = false;         // Auswahl‑Modus aktiv?
+        let selectedIds = new Set();       // Set der ausgewählten Artikel‑IDs
 
         // Dark Mode
         function initDarkMode() {
@@ -749,6 +802,10 @@
             document.getElementById('aktuelleListeName').textContent = '📋 ' + name;
             // Dropdown auf Standard setzen
             document.getElementById('sortSelect').value = 'created';
+            // Auswahl‑Modus zurücksetzen
+            selectionMode = false;
+            selectedIds.clear();
+            updateSelectionUI();
             loadArtikel();
         }
 
@@ -764,9 +821,88 @@
                 const resp = await apiCall(API_URL + '/listen/' + aktuelleListeId + '/artikel?sort=' + sort);
                 if (resp.ok) {
                     artikel = await resp.json();
+                    // Auswahl leeren, wenn sich die Artikelliste ändert
+                    selectedIds.clear();
+                    updateSelectionUI();
                     renderArtikel();
                 }
             } catch { }
+        }
+
+        // ---- Bulk‑Aktionen ----
+        function toggleSelectionMode() {
+            selectionMode = !selectionMode;
+            selectedIds.clear();
+            updateSelectionUI();
+            renderArtikel();
+        }
+
+        function updateSelectionUI() {
+            const bar = document.getElementById('bulkBar');
+            const btn = document.getElementById('toggleSelectionBtn');
+            if (selectionMode) {
+                bar.classList.remove('hidden');
+                btn.textContent = '✅ Fertig';
+                btn.classList.add('btn-primary');
+            } else {
+                bar.classList.add('hidden');
+                btn.textContent = '✏️ Auswahl';
+                btn.classList.remove('btn-primary');
+            }
+            document.getElementById('selectedCount').textContent =
+                `${selectedIds.size} von ${artikel.length} ausgewählt`;
+        }
+
+        function toggleItemSelection(id) {
+            if (selectedIds.has(id)) {
+                selectedIds.delete(id);
+            } else {
+                selectedIds.add(id);
+            }
+            updateSelectionUI();
+        }
+
+        function selectAll() {
+            if (selectedIds.size === artikel.length) {
+                selectedIds.clear();
+            } else {
+                artikel.forEach(a => selectedIds.add(a.id));
+            }
+            updateSelectionUI();
+            renderArtikel();
+        }
+
+        async function bulkToggle() {
+            if (selectedIds.size === 0) return alert('Keine Artikel ausgewählt.');
+            try {
+                const resp = await apiCall(API_URL + '/artikel/batch', {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ids: Array.from(selectedIds), action: 'toggle' })
+                });
+                if (resp.ok) {
+                    await loadArtikel();
+                } else {
+                    alert('Fehler beim Umschalten.');
+                }
+            } catch { alert('Server nicht erreichbar.'); }
+        }
+
+        async function bulkDelete() {
+            if (selectedIds.size === 0) return alert('Keine Artikel ausgewählt.');
+            if (!confirm(`${selectedIds.size} Artikel wirklich löschen?`)) return;
+            try {
+                const resp = await apiCall(API_URL + '/artikel/batch', {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ids: Array.from(selectedIds), action: 'delete' })
+                });
+                if (resp.ok) {
+                    await loadArtikel();
+                } else {
+                    alert('Fehler beim Löschen.');
+                }
+            } catch { alert('Server nicht erreichbar.'); }
         }
 
         function renderArtikel() {
@@ -774,7 +910,24 @@
             container.innerHTML = '';
             artikel.forEach(a => {
                 const div = document.createElement('div');
-                div.className = 'artikel-item' + (a.erledigt === 1 ? ' erledigt' : '');
+                let cssClass = 'artikel-item';
+                if (a.erledigt === 1) cssClass += ' erledigt';
+                if (selectionMode && selectedIds.has(a.id)) cssClass += ' selected-for-bulk';
+                div.className = cssClass;
+
+                // Im Auswahl‑Modus Auswahl‑Checkbox anzeigen
+                if (selectionMode) {
+                    const selCb = document.createElement('input');
+                    selCb.type = 'checkbox';
+                    selCb.className = 'auswahl-checkbox';
+                    selCb.checked = selectedIds.has(a.id);
+                    selCb.onclick = (e) => {
+                        e.stopPropagation();
+                        toggleItemSelection(a.id);
+                        renderArtikel();
+                    };
+                    div.appendChild(selCb);
+                }
 
                 const cb = document.createElement('input');
                 cb.type = 'checkbox';
@@ -798,7 +951,10 @@
                 div.appendChild(cb);
                 div.appendChild(span);
                 div.appendChild(menge);
-                div.appendChild(delBtn);
+                if (!selectionMode) {
+                    div.appendChild(delBtn);
+                }
+
                 container.appendChild(div);
             });
         }
