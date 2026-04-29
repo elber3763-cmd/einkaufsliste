@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Einkaufsliste</title>
+    <title>Meine Einkaufsliste</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='80' font-size='80'>🛒</text></svg>">
     <style>
         * {
             box-sizing: border-box;
@@ -625,7 +626,7 @@
     <div class="container">
         <!-- Header -->
         <div class="header">
-            <h1>🛒 Einkaufsliste</h1>
+            <h1>🛒 Meine Einkaufsliste</h1>
             <div class="header-buttons">
                 <button id="darkModeToggle" class="btn" onclick="toggleDarkMode()">🌙</button>
                 <button id="logoutBtn" class="btn btn-danger hidden" onclick="logout()">Logout</button>
@@ -800,7 +801,6 @@
                     localStorage.setItem('token', data.token);
                     msg.textContent = '';
                     nachLogin();
-                    // Wichtig: Beitritt nach erfolgreichem Login ausführen
                     checkJoinToken();
                 } else {
                     msg.textContent = 'Ungültige Anmeldedaten.';
