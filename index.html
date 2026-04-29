@@ -351,6 +351,17 @@
             border-bottom-color: rgba(255, 255, 255, 0.08);
         }
 
+        /* Fälligkeit */
+        .artikel-item.faellig {
+            background: rgba(255, 138, 128, 0.08);
+            border-left: 3px solid #ff8a80;
+            padding-left: 12px;
+        }
+
+        body.dark-mode .artikel-item.faellig {
+            background: rgba(255, 138, 128, 0.15);
+        }
+
         .artikel-checkbox,
         .auswahl-checkbox {
             width: 24px;
@@ -408,6 +419,22 @@
 
         body.dark-mode .artikel-menge {
             color: #aaa;
+        }
+
+        .artikel-datum {
+            font-size: 12px;
+            color: #999;
+            margin-left: 8px;
+            white-space: nowrap;
+        }
+
+        .artikel-item.faellig .artikel-datum {
+            color: #e53935;
+            font-weight: 600;
+        }
+
+        body.dark-mode .artikel-item.faellig .artikel-datum {
+            color: #ff8a80;
         }
 
         .sort-row {
@@ -668,6 +695,7 @@
                         <option value="created">Neueste zuerst</option>
                         <option value="name">Name (A–Z)</option>
                         <option value="erledigt">Status (Offen zuerst)</option>
+                        <option value="faellig">Fälligkeit (Nächste zuerst)</option>
                     </select>
                     <button id="toggleSelectionBtn" class="btn btn-selection" onclick="toggleSelectionMode()">✏️ Auswahl</button>
                 </div>
@@ -683,6 +711,7 @@
                 <div class="neuer-artikel-form">
                     <input type="text" id="neuerArtikelName" placeholder="Artikelname">
                     <input type="text" id="neuerArtikelMenge" placeholder="Menge (z.B. 2 Stk.)" style="max-width:150px;">
+                    <input type="date" id="neuerArtikelFaellig" style="max-width:160px;">
                     <button class="btn btn-primary" onclick="neuerArtikel()">➕</button>
                 </div>
                 <div id="artikelContainer"></div>
@@ -1054,6 +1083,16 @@
                 const div = document.createElement('div');
                 let cssClass = 'artikel-item';
                 if (a.erledigt === 1) cssClass += ' erledigt';
+                // Fälligkeitsdatum prüfen
+                if (a.faellig_am) {
+                    const heute = new Date();
+                    heute.setHours(0, 0, 0, 0);
+                    const faellig = new Date(a.faellig_am);
+                    faellig.setHours(0, 0, 0, 0);
+                    if (faellig < heute) {
+                        cssClass += ' faellig';
+                    }
+                }
                 div.className = cssClass;
 
                 if (selectionMode) {
@@ -1083,6 +1122,13 @@
                 menge.className = 'artikel-menge';
                 menge.textContent = a.menge || '';
 
+                const datumSpan = document.createElement('span');
+                datumSpan.className = 'artikel-datum';
+                if (a.faellig_am) {
+                    const d = new Date(a.faellig_am);
+                    datumSpan.textContent = '📅 ' + d.toLocaleDateString('de-DE');
+                }
+
                 const delBtn = document.createElement('button');
                 delBtn.textContent = '🗑️';
                 delBtn.className = 'btn';
@@ -1091,6 +1137,7 @@
                 div.appendChild(cb);
                 div.appendChild(span);
                 div.appendChild(menge);
+                div.appendChild(datumSpan);
                 if (!selectionMode) {
                     div.appendChild(delBtn);
                 }
@@ -1102,17 +1149,20 @@
         async function neuerArtikel() {
             const nameInput = document.getElementById('neuerArtikelName');
             const mengeInput = document.getElementById('neuerArtikelMenge');
+            const faelligInput = document.getElementById('neuerArtikelFaellig');
             const name = nameInput.value.trim();
             const menge = mengeInput.value.trim();
+            const faellig = faelligInput.value;
             if (!name) return alert('Name eingeben!');
             try {
                 const resp = await apiCall(API_URL + '/listen/' + aktuelleListeId + '/artikel', {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name, menge })
+                    body: JSON.stringify({ name, menge, faellig_am: faellig || null })
                 });
                 if (resp.ok) {
                     nameInput.value = '';
                     mengeInput.value = '';
+                    faelligInput.value = '';
                     await loadArtikel();
                 }
             } catch { alert('Fehler.'); }
