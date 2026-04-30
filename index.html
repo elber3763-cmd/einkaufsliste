@@ -915,8 +915,9 @@
 
                 <div class="neuer-artikel-form">
                     <input type="text" id="neuerArtikelName" placeholder="Artikelname">
+                    <input type="number" id="neuerArtikelMenge" placeholder="Anzahl" min="0" step="1" style="max-width:90px;">
                     <select id="neuerArtikelMengeEinheit" style="max-width:140px;">
-                        <option value="">Menge/Einheit</option>
+                        <option value="">Einheit wählen</option>
                         <option value="Stück">Stück</option>
                         <option value="kg">kg</option>
                         <option value="g">g</option>
@@ -1573,14 +1574,25 @@
 
         async function neuerArtikel() {
             const nameInput = document.getElementById('neuerArtikelName');
+            const mengeInput = document.getElementById('neuerArtikelMenge');
             const mengeSelect = document.getElementById('neuerArtikelMengeEinheit');
             const preisInput = document.getElementById('neuerArtikelPreis');
             const faelligInput = document.getElementById('neuerArtikelFaellig');
             const name = nameInput.value.trim();
-            const menge = mengeSelect.value;
+            const anzahl = mengeInput.value.trim();
+            const einheit = mengeSelect.value;
             const preis = preisInput.value ? parseFloat(preisInput.value) : null;
             const faellig = faelligInput.value;
+
             if (!name) return alert('Name eingeben!');
+
+            let menge = '';
+            if (anzahl) menge += anzahl;
+            if (einheit) {
+                if (menge) menge += ' ';
+                menge += einheit;
+            }
+
             try {
                 const resp = await apiCall(API_URL + '/listen/' + aktuelleListeId + '/artikel', {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -1588,6 +1600,7 @@
                 });
                 if (resp.ok) {
                     nameInput.value = '';
+                    mengeInput.value = '';
                     mengeSelect.value = '';
                     preisInput.value = '';
                     faelligInput.value = '';
