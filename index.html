@@ -551,7 +551,8 @@
         }
 
         .neue-liste-form input,
-        .neuer-artikel-form input {
+        .neuer-artikel-form input,
+        .neuer-artikel-form select {
             flex: 1;
             min-width: 150px;
             padding: 14px 16px;
@@ -564,14 +565,16 @@
         }
 
         body.dark-mode .neue-liste-form input,
-        body.dark-mode .neuer-artikel-form input {
+        body.dark-mode .neuer-artikel-form input,
+        body.dark-mode .neuer-artikel-form select {
             background: rgba(255, 255, 255, 0.1);
             border-color: rgba(255, 255, 255, 0.15);
             color: #eee;
         }
 
         .neue-liste-form input:focus,
-        .neuer-artikel-form input:focus {
+        .neuer-artikel-form input:focus,
+        .neuer-artikel-form select:focus {
             outline: none;
             border-color: #667eea;
             box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.15);
@@ -783,7 +786,8 @@
                 font-size: 13px;
             }
             .neue-liste-form input,
-            .neuer-artikel-form input {
+            .neuer-artikel-form input,
+            .neuer-artikel-form select {
                 padding: 12px 14px;
                 font-size: 15px;
             }
@@ -877,7 +881,21 @@
 
                 <div class="neuer-artikel-form">
                     <input type="text" id="neuerArtikelName" placeholder="Artikelname">
-                    <input type="text" id="neuerArtikelMenge" placeholder="Menge (z.B. 2 Stk.)" style="max-width:150px;">
+                    <select id="neuerArtikelMengeEinheit" style="max-width:160px;">
+                        <option value="">Menge/Einheit wählen</option>
+                        <option value="Stück">Stück</option>
+                        <option value="kg">kg</option>
+                        <option value="g">g</option>
+                        <option value="Liter">Liter</option>
+                        <option value="ml">ml</option>
+                        <option value="Packung">Packung</option>
+                        <option value="Bund">Bund</option>
+                        <option value="Dose">Dose</option>
+                        <option value="Flasche">Flasche</option>
+                        <option value="Glas">Glas</option>
+                        <option value="Paar">Paar</option>
+                        <option value="Meter">Meter</option>
+                    </select>
                     <input type="date" id="neuerArtikelFaellig" style="max-width:160px;">
                     <button class="btn btn-primary" onclick="neuerArtikel()">➕</button>
                 </div>
@@ -1440,10 +1458,10 @@
 
         async function neuerArtikel() {
             const nameInput = document.getElementById('neuerArtikelName');
-            const mengeInput = document.getElementById('neuerArtikelMenge');
+            const mengeSelect = document.getElementById('neuerArtikelMengeEinheit');
             const faelligInput = document.getElementById('neuerArtikelFaellig');
             const name = nameInput.value.trim();
-            const menge = mengeInput.value.trim();
+            const menge = mengeSelect.value;
             const faellig = faelligInput.value;
             if (!name) return alert('Name eingeben!');
             try {
@@ -1453,7 +1471,7 @@
                 });
                 if (resp.ok) {
                     nameInput.value = '';
-                    mengeInput.value = '';
+                    mengeSelect.value = '';
                     faelligInput.value = '';
                     await loadArtikel();
                 }
