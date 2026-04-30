@@ -183,6 +183,19 @@
             color: #90caf9;
         }
 
+        .druck-btn {
+            background: transparent;
+            border: 2px solid #999;
+            color: #666;
+        }
+        body.dark-mode .druck-btn {
+            color: #aaa;
+            border-color: #aaa;
+        }
+        .druck-btn:hover {
+            background: #eee;
+        }
+
         /* Auth Box */
         .auth-box {
             background: rgba(248, 249, 255, 0.8);
@@ -646,6 +659,99 @@
         ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 10px; }
         body.dark-mode ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); }
 
+        /* Druck-Stile */
+        @media print {
+            body {
+                background: white !important;
+                padding: 0;
+                margin: 0;
+            }
+            .container {
+                box-shadow: none;
+                border: none;
+                padding: 20px;
+                backdrop-filter: none;
+                background: white !important;
+                max-width: 100%;
+            }
+            .header-buttons,
+            .btn,
+            .sort-row,
+            .bulk-bar,
+            .neue-liste-form,
+            .neuer-artikel-form,
+            .back-btn,
+            .faellig-badge,
+            .druck-btn,
+            .modal-overlay,
+            .tabs,
+            .manage-kat-btn,
+            .logout-btn,
+            .dark-mode-btn,
+            .auth-box,
+            .hidden,
+            .neue-liste-form,
+            .artikel-item .loesch-btn,
+            .edit-btn,
+            .auswahl-checkbox,
+            .artikel-actions,
+            .liste-actions,
+            .modal,
+            .close-modal,
+            .btn-primary,
+            .btn-danger,
+            .btn-selection,
+            .btn-aktivitaeten,
+            .faellig-badge,
+            .bulk-bar,
+            .sort-row label,
+            select,
+            .artikel-checkbox,
+            .auswahl-checkbox {
+                display: none !important;
+            }
+            .artikel-item {
+                border-bottom: 1px solid #ccc;
+                padding: 8px 0;
+                display: flex;
+                align-items: center;
+            }
+            .artikel-text {
+                color: black !important;
+                font-size: 14px;
+            }
+            .artikel-text.erledigt {
+                color: #666 !important;
+                text-decoration: line-through;
+            }
+            .artikel-menge {
+                color: black !important;
+                font-size: 13px;
+            }
+            .artikel-datum {
+                color: #555 !important;
+            }
+            .artikel-autor {
+                color: #555 !important;
+            }
+            .liste-row {
+                border: 1px solid #ccc;
+                background: transparent;
+                box-shadow: none;
+                padding: 10px;
+                margin-bottom: 8px;
+            }
+            h1, h2, h3 {
+                color: black !important;
+                -webkit-text-fill-color: black !important;
+                background: none !important;
+            }
+            .artikel-item.faellig {
+                background: none !important;
+                border-left: 3px solid #e53935;
+            }
+        }
+
         /* Responsive */
         @media (max-width: 480px) {
             body {
@@ -757,6 +863,7 @@
                     </select>
                     <button id="toggleSelectionBtn" class="btn btn-selection" onclick="toggleSelectionMode()">✏️ Auswahl</button>
                     <button class="btn btn-aktivitaeten" onclick="openAktivitaetenModal()">📜 Aktivitäten</button>
+                    <button class="btn druck-btn" onclick="window.print()">🖨️ Drucken</button>
                     <span id="faelligBadge" class="faellig-badge hidden" onclick="filterFaellig()">⚠️ <span id="faelligCount">0</span> überfällig</span>
                 </div>
 
@@ -1262,7 +1369,6 @@
                 const div = document.createElement('div');
                 let cssClass = 'artikel-item';
                 if (a.erledigt === 1) cssClass += ' erledigt';
-                // Fälligkeitsdatum prüfen
                 if (a.faellig_am) {
                     const heute = new Date();
                     heute.setHours(0, 0, 0, 0);
@@ -1308,7 +1414,6 @@
                     datumSpan.textContent = '📅 ' + d.toLocaleDateString('de-DE');
                 }
 
-                // Autor anzeigen
                 const autorSpan = document.createElement('span');
                 autorSpan.className = 'artikel-autor';
                 if (a.added_by_username) {
