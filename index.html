@@ -338,8 +338,8 @@
         .artikel-item {
             display: flex;
             align-items: center;
-            gap: 14px;
-            padding: 16px 0;
+            gap: 10px;
+            padding: 14px 0;
             border-bottom: 1px solid rgba(0, 0, 0, 0.06);
             transition: background 0.2s, padding-left 0.2s;
             flex-wrap: wrap;
@@ -433,7 +433,7 @@
         }
 
         .artikel-menge {
-            width: 100px;
+            width: 90px;
             min-width: 60px;
             font-size: 14px;
             font-weight: 500;
@@ -445,10 +445,24 @@
             color: #aaa;
         }
 
+        .artikel-preis {
+            width: 80px;
+            min-width: 60px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #2e7d32;
+            text-align: right;
+            white-space: nowrap;
+        }
+
+        body.dark-mode .artikel-preis {
+            color: #81c784;
+        }
+
         .artikel-datum {
             font-size: 12px;
             color: #999;
-            margin-left: 8px;
+            margin-left: 4px;
             white-space: nowrap;
         }
 
@@ -464,7 +478,7 @@
         .artikel-autor {
             font-size: 11px;
             color: #888;
-            margin-left: 8px;
+            margin-left: 4px;
             white-space: nowrap;
         }
 
@@ -523,6 +537,21 @@
             color: #eee;
         }
 
+        .summen-zeile {
+            margin-top: 18px;
+            padding-top: 14px;
+            border-top: 2px solid rgba(0,0,0,0.1);
+            text-align: right;
+            font-weight: 700;
+            font-size: 18px;
+            color: #2e7d32;
+        }
+
+        body.dark-mode .summen-zeile {
+            border-top-color: rgba(255,255,255,0.15);
+            color: #81c784;
+        }
+
         /* Bulk‑Aktionen Leiste */
         .bulk-bar {
             display: flex;
@@ -554,7 +583,7 @@
         .neuer-artikel-form input,
         .neuer-artikel-form select {
             flex: 1;
-            min-width: 150px;
+            min-width: 120px;
             padding: 14px 16px;
             border: 1px solid rgba(0, 0, 0, 0.08);
             border-radius: 16px;
@@ -712,7 +741,8 @@
             .sort-row label,
             select,
             .artikel-checkbox,
-            .auswahl-checkbox {
+            .auswahl-checkbox,
+            .summen-zeile {
                 display: none !important;
             }
             .artikel-item {
@@ -729,7 +759,8 @@
                 color: #666 !important;
                 text-decoration: line-through;
             }
-            .artikel-menge {
+            .artikel-menge,
+            .artikel-preis {
                 color: black !important;
                 font-size: 13px;
             }
@@ -777,14 +808,14 @@
                 padding: 16px 16px;
             }
             .artikel-item {
-                gap: 10px;
-                padding: 14px 0;
+                gap: 8px;
+                padding: 12px 0;
             }
             .artikel-text {
                 font-size: 15px;
             }
-            .artikel-menge {
-                width: 70px;
+            .artikel-menge, .artikel-preis {
+                width: 60px;
                 font-size: 13px;
             }
             .neue-liste-form input,
@@ -884,8 +915,8 @@
 
                 <div class="neuer-artikel-form">
                     <input type="text" id="neuerArtikelName" placeholder="Artikelname">
-                    <select id="neuerArtikelMengeEinheit" style="max-width:160px;">
-                        <option value="">Menge/Einheit wählen</option>
+                    <select id="neuerArtikelMengeEinheit" style="max-width:140px;">
+                        <option value="">Menge/Einheit</option>
                         <option value="Stück">Stück</option>
                         <option value="kg">kg</option>
                         <option value="g">g</option>
@@ -899,10 +930,12 @@
                         <option value="Paar">Paar</option>
                         <option value="Meter">Meter</option>
                     </select>
-                    <input type="date" id="neuerArtikelFaellig" style="max-width:160px;">
+                    <input type="number" id="neuerArtikelPreis" placeholder="Preis (€)" step="0.01" min="0" style="max-width:110px;">
+                    <input type="date" id="neuerArtikelFaellig" style="max-width:150px;">
                     <button class="btn btn-primary" onclick="neuerArtikel()">➕</button>
                 </div>
                 <div id="artikelContainer"></div>
+                <div id="summenZeile" class="summen-zeile hidden"></div>
             </div>
         </div>
     </div>
@@ -936,7 +969,7 @@
         </div>
     </div>
 
-    <!-- NEU: Modal für Passwort ändern -->
+    <!-- Modal für Passwort ändern -->
     <div id="passwordModal" class="modal-overlay hidden">
         <div class="modal">
             <button class="close-modal" onclick="closePasswordModal()">✖</button>
@@ -1260,7 +1293,7 @@
             document.getElementById('aktivitaetenModal').classList.add('hidden');
         }
 
-        // ---- Passwort-Modal (NEU) ----
+        // ---- Passwort-Modal ----
         function openPasswordModal() {
             document.getElementById('passwordModal').classList.remove('hidden');
             document.getElementById('oldPasswordInput').value = '';
@@ -1335,6 +1368,7 @@
                     updateSelectionUI();
                     updateFaelligBadge();
                     renderArtikel();
+                    updateSumme();
                 }
             } catch { }
         }
@@ -1363,6 +1397,19 @@
         function filterFaellig() {
             document.getElementById('sortSelect').value = 'faellig';
             loadArtikel();
+        }
+
+        // ---- Summe berechnen ----
+        function updateSumme() {
+            const summeZeile = document.getElementById('summenZeile');
+            const offene = artikel.filter(a => a.erledigt === 0 && a.preis != null);
+            if (offene.length === 0) {
+                summeZeile.classList.add('hidden');
+                return;
+            }
+            const summe = offene.reduce((acc, a) => acc + parseFloat(a.preis), 0);
+            summeZeile.textContent = `💶 Summe (offen): ${summe.toFixed(2)} €`;
+            summeZeile.classList.remove('hidden');
         }
 
         // ---- Bulk‑Aktionen ----
@@ -1486,6 +1533,12 @@
                 menge.className = 'artikel-menge';
                 menge.textContent = a.menge || '';
 
+                const preisSpan = document.createElement('span');
+                preisSpan.className = 'artikel-preis';
+                if (a.preis != null) {
+                    preisSpan.textContent = parseFloat(a.preis).toFixed(2) + ' €';
+                }
+
                 const datumSpan = document.createElement('span');
                 datumSpan.className = 'artikel-datum';
                 if (a.faellig_am) {
@@ -1507,6 +1560,7 @@
                 div.appendChild(cb);
                 div.appendChild(span);
                 div.appendChild(menge);
+                div.appendChild(preisSpan);
                 div.appendChild(datumSpan);
                 div.appendChild(autorSpan);
                 if (!selectionMode) {
@@ -1520,19 +1574,22 @@
         async function neuerArtikel() {
             const nameInput = document.getElementById('neuerArtikelName');
             const mengeSelect = document.getElementById('neuerArtikelMengeEinheit');
+            const preisInput = document.getElementById('neuerArtikelPreis');
             const faelligInput = document.getElementById('neuerArtikelFaellig');
             const name = nameInput.value.trim();
             const menge = mengeSelect.value;
+            const preis = preisInput.value ? parseFloat(preisInput.value) : null;
             const faellig = faelligInput.value;
             if (!name) return alert('Name eingeben!');
             try {
                 const resp = await apiCall(API_URL + '/listen/' + aktuelleListeId + '/artikel', {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name, menge, faellig_am: faellig || null })
+                    body: JSON.stringify({ name, menge, faellig_am: faellig || null, preis })
                 });
                 if (resp.ok) {
                     nameInput.value = '';
                     mengeSelect.value = '';
+                    preisInput.value = '';
                     faelligInput.value = '';
                     await loadArtikel();
                 }
@@ -1548,6 +1605,7 @@
                 const a = artikel.find(x => x.id === id);
                 if (a) a.erledigt = !aktuellErledigt ? 1 : 0;
                 renderArtikel();
+                updateSumme();
             } catch { alert('Fehler beim Aktualisieren.'); }
         }
 
