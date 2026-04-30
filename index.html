@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Meine Einkaufsliste</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='80' font-size='80'>🛒</text></svg>">
+    <title>Meine Notizen (Cloud)</title>
     <style>
         * {
             box-sizing: border-box;
@@ -45,10 +44,9 @@
             box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5);
         }
 
-        /* Header */
+        /* ---- Header ---- */
         .header {
             display: flex;
-            justify-content: space-between;
             align-items: center;
             margin-bottom: 28px;
             flex-wrap: wrap;
@@ -56,6 +54,8 @@
         }
 
         .header h1 {
+            flex: 1;
+            text-align: center;
             font-size: 2rem;
             font-weight: 700;
             background: linear-gradient(135deg, #667eea, #764ba2);
@@ -71,116 +71,33 @@
             background-clip: text;
         }
 
-        .header-buttons {
-            display: flex;
-            gap: 12px;
-        }
-
-        .btn {
-            padding: 10px 18px;
+        .logout-btn, .dark-mode-btn {
+            flex-shrink: 0;
+            background: transparent;
+            border: 2px solid #ff6b6b;
+            color: #ff6b6b;
+            padding: 8px 16px;
             border-radius: 30px;
-            font-weight: 600;
             cursor: pointer;
+            font-weight: 600;
             font-size: 14px;
-            background: rgba(255, 255, 255, 0.7);
-            border: 1px solid rgba(0, 0, 0, 0.08);
-            color: #444;
             transition: all 0.25s;
-            backdrop-filter: blur(6px);
-            letter-spacing: 0.3px;
             white-space: nowrap;
         }
 
-        .btn:hover {
-            background: rgba(255, 255, 255, 0.95);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
-            transform: translateY(-1px);
-        }
-
-        .btn:active {
-            transform: scale(0.96);
-            box-shadow: none;
-        }
-
-        body.dark-mode .btn {
-            background: rgba(255, 255, 255, 0.1);
-            border-color: rgba(255, 255, 255, 0.15);
-            color: #ddd;
-        }
-
-        body.dark-mode .btn:hover {
-            background: rgba(255, 255, 255, 0.18);
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea, #764ba2);
+        .logout-btn:hover {
+            background: #ff6b6b;
             color: white;
-            border: none;
         }
 
-        .btn-primary:hover {
-            background: linear-gradient(135deg, #5a6fd6, #6a4190);
-            box-shadow: 0 12px 28px rgba(102, 126, 234, 0.35);
+        .dark-mode-btn {
+            border-color: #999;
+            color: #999;
         }
 
-        .btn-primary:active {
-            transform: scale(0.96);
-        }
-
-        .btn-danger {
-            border-color: #ff8a80;
-            color: #e53935;
-        }
-
-        .btn-danger:hover {
-            background: #ff8a80;
+        .dark-mode-btn:hover {
+            background: #999;
             color: white;
-            border-color: transparent;
-        }
-
-        .btn-danger:active {
-            transform: scale(0.96);
-        }
-
-        body.dark-mode .btn-danger {
-            border-color: #ff8a80;
-            color: #ff8a80;
-        }
-
-        body.dark-mode .btn-danger:hover {
-            background: #ff8a80;
-            color: #1e1e2f;
-        }
-
-        .btn-selection {
-            background: rgba(255, 255, 255, 0.7);
-            border: 1px solid #90caf9;
-            color: #1976d2;
-        }
-
-        body.dark-mode .btn-selection {
-            background: rgba(255, 255, 255, 0.1);
-            border-color: #64b5f6;
-            color: #90caf9;
-        }
-
-        .btn-selection:hover {
-            background: rgba(255, 255, 255, 0.95);
-        }
-
-        body.dark-mode .btn-selection:hover {
-            background: rgba(255, 255, 255, 0.18);
-        }
-
-        .btn-aktivitaeten {
-            background: transparent;
-            border: 2px solid #90caf9;
-            color: #1976d2;
-        }
-
-        body.dark-mode .btn-aktivitaeten {
-            border-color: #64b5f6;
-            color: #90caf9;
         }
 
         /* Auth Box */
@@ -240,18 +157,13 @@
             transition: all 0.25s;
         }
 
+        .auth-btn:hover {
+            transform: scale(1.02);
+        }
+
         .login-btn {
             background: linear-gradient(135deg, #667eea, #764ba2);
             color: white;
-        }
-
-        .login-btn:hover {
-            box-shadow: 0 12px 28px rgba(102, 126, 234, 0.35);
-            transform: translateY(-1px);
-        }
-
-        .login-btn:active {
-            transform: scale(0.96);
         }
 
         .register-btn {
@@ -262,10 +174,6 @@
         body.dark-mode .register-btn {
             background: rgba(255, 255, 255, 0.08);
             color: #ddd;
-        }
-
-        .register-btn:active {
-            transform: scale(0.96);
         }
 
         .auth-message {
@@ -280,444 +188,263 @@
 
         .hidden { display: none !important; }
 
-        /* Listen-Übersicht */
-        .liste-row {
-            background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(8px);
-            border: 1px solid rgba(0, 0, 0, 0.04);
-            border-radius: 18px;
-            padding: 18px 20px;
-            margin-bottom: 12px;
+        /* Kategorie-Tabs */
+        .tabs {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-            transition: background 0.25s, box-shadow 0.25s, transform 0.2s;
             flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        .liste-row:hover {
-            background: rgba(255, 255, 255, 0.9);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.06);
-            transform: translateY(-2px);
-        }
-
-        .liste-row.geteilt {
-            border-left: 4px solid #667eea;
-        }
-
-        .liste-name {
-            font-weight: 600;
-            color: #333;
-        }
-
-        body.dark-mode .liste-name {
-            color: #ddd;
-        }
-
-        .liste-actions {
-            display: flex;
             gap: 8px;
+            margin-bottom: 25px;
+            justify-content: center;
         }
 
-        /* Artikel */
-        .artikel-item {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            padding: 16px 0;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-            transition: background 0.2s, padding-left 0.2s;
-            flex-wrap: wrap;
-        }
-
-        .artikel-item:last-child {
-            border-bottom: none;
-        }
-
-        .artikel-item:hover {
-            background: rgba(0, 0, 0, 0.015);
-        }
-
-        body.dark-mode .artikel-item:hover {
-            background: rgba(255, 255, 255, 0.03);
-        }
-
-        .artikel-item.erledigt {
-            opacity: 0.85;
-        }
-
-        .artikel-item.erledigt + .artikel-item:not(.erledigt) {
-            margin-top: 8px;
-            padding-top: 20px;
-            border-top: 1px dashed rgba(0, 0, 0, 0.1);
-        }
-
-        body.dark-mode .artikel-item.erledigt + .artikel-item:not(.erledigt) {
-            border-top-color: rgba(255, 255, 255, 0.1);
-        }
-
-        body.dark-mode .artikel-item {
-            border-bottom-color: rgba(255, 255, 255, 0.08);
-        }
-
-        /* Fälligkeit */
-        .artikel-item.faellig {
-            background: rgba(255, 138, 128, 0.08);
-            border-left: 3px solid #ff8a80;
-            padding-left: 12px;
-        }
-
-        body.dark-mode .artikel-item.faellig {
-            background: rgba(255, 138, 128, 0.15);
-        }
-
-        .artikel-checkbox,
-        .auswahl-checkbox {
-            width: 24px;
-            height: 24px;
-            min-width: 24px;
-            cursor: pointer;
-            accent-color: #667eea;
-            transform: scale(1.1);
-            transition: transform 0.15s, opacity 0.2s;
-        }
-
-        .artikel-checkbox:hover,
-        .auswahl-checkbox:hover {
-            transform: scale(1.25);
-        }
-
-        .auswahl-checkbox {
-            margin-right: 4px;
-        }
-
-        .artikel-text {
-            flex: 1;
-            font-size: 16px;
-            font-weight: 500;
-            color: #333;
-            word-break: break-word;
-            min-width: 120px;
-            transition: color 0.2s, text-decoration 0.2s;
-        }
-
-        .artikel-text.erledigt {
-            text-decoration: line-through;
-            text-decoration-thickness: 2px;
-            text-decoration-color: rgba(0,0,0,0.25);
-            color: #aaa;
-        }
-
-        body.dark-mode .artikel-text {
-            color: #eee;
-        }
-
-        body.dark-mode .artikel-text.erledigt {
-            color: #777;
-            text-decoration-color: rgba(255,255,255,0.2);
-        }
-
-        .artikel-menge {
-            width: 100px;
-            min-width: 60px;
-            font-size: 14px;
-            font-weight: 500;
-            color: #666;
-            text-align: right;
-        }
-
-        body.dark-mode .artikel-menge {
-            color: #aaa;
-        }
-
-        .artikel-datum {
-            font-size: 12px;
-            color: #999;
-            margin-left: 8px;
-            white-space: nowrap;
-        }
-
-        .artikel-item.faellig .artikel-datum {
-            color: #e53935;
-            font-weight: 600;
-        }
-
-        body.dark-mode .artikel-item.faellig .artikel-datum {
-            color: #ff8a80;
-        }
-
-        .artikel-autor {
-            font-size: 11px;
-            color: #888;
-            margin-left: 8px;
-            white-space: nowrap;
-        }
-
-        .faellig-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            margin-left: 12px;
-            font-size: 13px;
-            font-weight: 600;
-            color: #e53935;
-            background: rgba(255, 138, 128, 0.15);
-            padding: 4px 12px;
-            border-radius: 20px;
-            cursor: pointer;
-        }
-
-        body.dark-mode .faellig-badge {
-            color: #ff8a80;
-            background: rgba(255, 138, 128, 0.25);
-        }
-
-        .sort-row {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin: 15px 0;
-        }
-
-        .sort-row label {
-            font-size: 14px;
-            font-weight: 600;
-            color: #555;
-        }
-
-        body.dark-mode .sort-row label {
-            color: #ccc;
-        }
-
-        select {
-            padding: 8px 12px;
-            border-radius: 12px;
+        .tab-btn {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(6px);
             border: 1px solid rgba(0, 0, 0, 0.08);
+            padding: 10px 15px;
+            border-radius: 20px;
             font-size: 14px;
-            font-family: inherit;
-            background: rgba(255, 255, 255, 0.8);
-            color: #333;
+            font-weight: 600;
             cursor: pointer;
-            transition: border-color 0.25s, box-shadow 0.25s;
+            transition: all 0.25s;
+            color: #555;
+            white-space: nowrap;
         }
 
-        body.dark-mode select {
-            background: rgba(255, 255, 255, 0.1);
-            border-color: rgba(255, 255, 255, 0.15);
-            color: #eee;
+        .tab-btn.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+            border-color: transparent;
         }
 
-        /* Bulk‑Aktionen Leiste */
-        .bulk-bar {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 18px;
-            flex-wrap: wrap;
+        .tab-btn:hover {
+            opacity: 0.9;
         }
 
-        .bulk-bar span {
-            font-size: 14px;
-            font-weight: 500;
-            color: #444;
-        }
-
-        body.dark-mode .bulk-bar span {
-            color: #ccc;
-        }
-
-        .neue-liste-form,
-        .neuer-artikel-form {
-            display: flex;
-            gap: 12px;
-            margin: 20px 0;
-            flex-wrap: wrap;
-        }
-
-        .neue-liste-form input,
-        .neuer-artikel-form input {
-            flex: 1;
-            min-width: 150px;
-            padding: 14px 16px;
+        /* Eingabe */
+        textarea {
+            width: 100%;
+            height: 90px;
             border: 1px solid rgba(0, 0, 0, 0.08);
             border-radius: 16px;
-            font-size: 15px;
+            padding: 14px;
+            font-size: 16px;
             font-family: inherit;
+            resize: vertical;
             background: rgba(255, 255, 255, 0.8);
             transition: border-color 0.25s, box-shadow 0.25s;
+            margin-bottom: 12px;
         }
 
-        body.dark-mode .neue-liste-form input,
-        body.dark-mode .neuer-artikel-form input {
+        body.dark-mode textarea {
             background: rgba(255, 255, 255, 0.1);
             border-color: rgba(255, 255, 255, 0.15);
             color: #eee;
         }
 
-        .neue-liste-form input:focus,
-        .neuer-artikel-form input:focus {
+        textarea:focus {
             outline: none;
             border-color: #667eea;
             box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.15);
         }
 
-        .back-btn {
-            margin-bottom: 18px;
-        }
-
-        /* Modal */
-        .modal-overlay {
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.5);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-
-        .modal {
-            background: white;
-            border-radius: 16px;
-            padding: 25px;
-            width: 90%;
-            max-width: 400px;
-            max-height: 80vh;
-            overflow-y: auto;
-        }
-
-        .modal h3 { margin-bottom: 15px; }
-
-        .modal input {
-            width: 100%;
-            padding: 10px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 16px;
-            margin-bottom: 10px;
-        }
-
-        .close-modal {
-            float: right;
-            background: none;
+        .btn-hinzufuegen {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
             border: none;
-            font-size: 20px;
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 16px;
             cursor: pointer;
+            width: 100%;
+            transition: transform 0.1s ease, box-shadow 0.2s ease;
         }
 
-        .modal-divider {
-            margin: 20px 0;
-            border-top: 1px solid #e0e0e0;
+        .btn-hinzufuegen:hover {
+            transform: scale(1.02);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
         }
 
-        .share-email-result,
-        .aktivitaet-eintrag {
-            font-size: 13px;
+        /* Notizliste */
+        .notiz-liste {
+            margin-top: 25px;
+        }
+
+        .notiz-eintrag {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(0, 0, 0, 0.04);
+            border-radius: 18px;
+            padding: 18px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+            transition: background 0.2s, transform 0.2s;
+        }
+
+        .notiz-eintrag:hover {
+            background: rgba(255, 255, 255, 0.9);
+            transform: translateY(-2px);
+        }
+
+        body.dark-mode .notiz-eintrag {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.08);
+        }
+
+        body.dark-mode .notiz-eintrag:hover {
+            background: rgba(255, 255, 255, 0.14);
+        }
+
+        .notiz-inhalt-wrapper {
+            flex: 1;
+            padding-right: 15px;
+        }
+
+        .notiz-text {
+            font-size: 16px;
+            color: #333;
+            line-height: 1.5;
+            word-break: break-word;
+        }
+
+        body.dark-mode .notiz-text {
+            color: #ddd;
+        }
+
+        .notiz-datum {
+            display: block;
+            font-size: 12px;
+            color: #999;
             margin-top: 5px;
         }
 
-        .aktivitaet-eintrag {
-            border-bottom: 1px solid #eee;
-            padding: 8px 0;
+        body.dark-mode .notiz-datum {
+            color: #aaa;
         }
 
-        body.dark-mode .aktivitaet-eintrag {
-            border-bottom-color: #555;
+        .aktionen {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            align-items: center;
         }
 
-        /* Listen-Header */
-        h2 {
-            font-size: 1.5rem;
+        .edit-btn, .loesch-btn {
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.25s;
+        }
+
+        .edit-btn:hover {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        .loesch-btn {
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 20px;
             font-weight: 600;
-            margin-bottom: 8px;
-            color: #333;
         }
 
-        body.dark-mode h2 {
-            color: #eee;
+        .loesch-btn:hover {
+            background: #ee5a24;
         }
 
-        /* Scrollbar */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 10px; }
-        body.dark-mode ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); }
+        .inline-actions {
+            display: flex;
+            gap: 5px;
+            margin-top: 5px;
+        }
 
-        /* Responsive */
+        .save-btn, .cancel-btn {
+            border: none;
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .save-btn {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .cancel-btn {
+            background: #aaa;
+            color: white;
+        }
+
+        /* Export/Import */
+        .export-import {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .export-btn, .import-btn {
+            background: transparent;
+            border: 2px solid #667eea;
+            color: #667eea;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.2s;
+            white-space: nowrap;
+        }
+
+        .export-btn:hover, .import-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        body.dark-mode .export-btn,
+        body.dark-mode .import-btn {
+            border-color: #aaa;
+            color: #aaa;
+        }
+
+        /* API Status */
+        .api-status {
+            text-align: center;
+            font-size: 12px;
+            margin-bottom: 10px;
+        }
+
+        .api-status.verbunden { color: #4CAF50; }
+        .api-status.getrennt { color: #e74c3c; }
+
+        .lade-anzeige { text-align: center; color: #aaa; padding: 20px; }
+
         @media (max-width: 480px) {
-            body {
-                padding: 12px;
-            }
-            .container {
-                padding: 24px 16px;
-                border-radius: 22px;
-            }
-            .header h1 {
-                font-size: 1.6rem;
-            }
-            .btn {
-                padding: 10px 16px;
-                font-size: 14px;
-            }
-            .liste-row {
-                padding: 16px 16px;
-            }
-            .artikel-item {
-                gap: 10px;
-                padding: 14px 0;
-            }
-            .artikel-text {
-                font-size: 15px;
-            }
-            .artikel-menge {
-                width: 70px;
-                font-size: 13px;
-            }
-            .neue-liste-form input,
-            .neuer-artikel-form input {
-                padding: 12px 14px;
-                font-size: 15px;
-            }
-            h2 {
-                font-size: 1.35rem;
-            }
-        }
-
-        @media (max-width: 360px) {
-            .header {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-            .header-buttons {
-                width: 100%;
-                justify-content: flex-end;
-            }
-            .btn {
-                padding: 8px 14px;
-                font-size: 13px;
-            }
-            .artikel-checkbox,
-            .auswahl-checkbox {
-                width: 22px;
-                height: 22px;
-            }
+            body { padding: 12px; }
+            .container { padding: 24px 16px; border-radius: 22px; }
+            .header h1 { font-size: 1.6rem; }
+            .tab-btn { font-size: 13px; padding: 8px 12px; }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- Header -->
         <div class="header">
-            <h1>🛒 Meine Einkaufsliste</h1>
-            <div class="header-buttons">
-                <button id="darkModeToggle" class="btn" onclick="toggleDarkMode()">🌙</button>
-                <button id="logoutBtn" class="btn btn-danger hidden" onclick="logout()">Logout</button>
-            </div>
+            <h1>📝 Meine Notizen (Cloud)</h1>
+            <button id="darkModeToggle" class="dark-mode-btn" onclick="toggleDarkMode()">🌙</button>
+            <button id="logoutBtn" class="logout-btn hidden" onclick="logout()">Logout</button>
         </div>
 
-        <!-- Auth -->
         <div id="authBox" class="auth-box">
             <input type="email" id="authEmail" placeholder="E-Mail" autocomplete="email">
             <input type="password" id="authPassword" placeholder="Passwort" autocomplete="current-password">
@@ -728,95 +455,27 @@
             <div id="authMessage" class="auth-message"></div>
         </div>
 
-        <!-- Hauptansicht (nach Login) -->
+        <div id="apiStatus" class="api-status"></div>
+
         <div id="appContent" class="hidden">
-            <!-- Listen-Übersicht -->
-            <div id="listenView">
-                <h2>Meine Listen</h2>
-                <div class="neue-liste-form">
-                    <input type="text" id="neueListeInput" placeholder="Neue Liste...">
-                    <button class="btn btn-primary" onclick="neueListe()">➕</button>
-                </div>
-                <div id="listenContainer"></div>
+            <div class="tabs" id="tabsContainer"></div>
+            <textarea id="notizEingabe" placeholder="Schreibe eine neue Notiz..."></textarea>
+            <button class="btn-hinzufuegen" onclick="notizHinzufuegen()">➕ Hinzufügen</button>
+            <div class="export-import">
+                <button class="export-btn" onclick="notizenExportieren()">📥 Export</button>
+                <button class="import-btn" onclick="document.getElementById('importFileInput').click()">📤 Import</button>
+                <input type="file" id="importFileInput" accept=".json" class="hidden" onchange="notizenImportieren(event)" />
             </div>
-
-            <!-- Artikel-Ansicht (Detail) -->
-            <div id="artikelView" class="hidden">
-                <button class="btn back-btn" onclick="zurueckZuListen()">← Zurück</button>
-                <h2 id="aktuelleListeName"></h2>
-
-                <!-- Sortierung & Auswahl‑Modus & Aktivitäten -->
-                <div class="sort-row">
-                    <label for="sortSelect">Sortierung:</label>
-                    <select id="sortSelect" onchange="loadArtikel()">
-                        <option value="created">Neueste zuerst</option>
-                        <option value="name">Name (A–Z)</option>
-                        <option value="erledigt">Status (Offen zuerst)</option>
-                        <option value="faellig">Fälligkeit (Nächste zuerst)</option>
-                    </select>
-                    <button id="toggleSelectionBtn" class="btn btn-selection" onclick="toggleSelectionMode()">✏️ Auswahl</button>
-                    <button class="btn btn-aktivitaeten" onclick="openAktivitaetenModal()">📜 Aktivitäten</button>
-                    <span id="faelligBadge" class="faellig-badge hidden" onclick="filterFaellig()">⚠️ <span id="faelligCount">0</span> überfällig</span>
-                </div>
-
-                <!-- Bulk‑Aktionsleiste (im Auswahl‑Modus sichtbar) -->
-                <div id="bulkBar" class="bulk-bar hidden">
-                    <button class="btn" onclick="selectAll()">Alle auswählen</button>
-                    <button class="btn" onclick="bulkToggle()">Erledigt umschalten</button>
-                    <button class="btn btn-danger" onclick="bulkDelete()">Löschen</button>
-                    <span id="selectedCount"></span>
-                </div>
-
-                <div class="neuer-artikel-form">
-                    <input type="text" id="neuerArtikelName" placeholder="Artikelname">
-                    <input type="text" id="neuerArtikelMenge" placeholder="Menge (z.B. 2 Stk.)" style="max-width:150px;">
-                    <input type="date" id="neuerArtikelFaellig" style="max-width:160px;">
-                    <button class="btn btn-primary" onclick="neuerArtikel()">➕</button>
-                </div>
-                <div id="artikelContainer"></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal für Freigabe-Link UND E-Mail-Freigabe -->
-    <div id="shareModal" class="modal-overlay hidden">
-        <div class="modal">
-            <button class="close-modal" onclick="closeShareModal()">✖</button>
-            <h3>🔗 Liste teilen</h3>
-            <p style="margin-bottom:10px;font-size:14px;">Teile diesen Link mit anderen, damit sie die Liste bearbeiten können.</p>
-            <input type="text" id="shareLinkInput" readonly>
-            <button class="btn btn-primary" onclick="copyShareLink()">📋 Link kopieren</button>
-            <span id="copyConfirmation" style="margin-left:10px;font-size:13px;color:#4CAF50;" class="hidden">Kopiert!</span>
-
-            <div class="modal-divider"></div>
-
-            <h3>📧 Per E-Mail teilen</h3>
-            <p style="margin-bottom:10px;font-size:14px;">Gib die registrierte E-Mail-Adresse des Nutzers ein, um die Liste direkt mit ihm zu teilen.</p>
-            <input type="email" id="shareEmailInput" placeholder="E-Mail-Adresse">
-            <button class="btn btn-primary" onclick="shareViaEmail()">Teilen</button>
-            <div id="shareEmailResult" class="share-email-result"></div>
-        </div>
-    </div>
-
-    <!-- Modal für Aktivitäten-Feed -->
-    <div id="aktivitaetenModal" class="modal-overlay hidden">
-        <div class="modal">
-            <button class="close-modal" onclick="closeAktivitaetenModal()">✖</button>
-            <h3>📜 Aktivitäten</h3>
-            <div id="aktivitaetenContainer"></div>
+            <div id="notizListe" class="notiz-liste"></div>
         </div>
     </div>
 
     <script>
-        const API_URL = 'https://einkaufsliste-api.elber3763.workers.dev/api';
-        let listen = [];
-        let aktuelleListeId = null;
-        let artikel = [];
-        let selectionMode = false;
-        let selectedIds = new Set();
-        let aktuellerBenutzerEmail = '';
+        const API_URL = 'https://notizen-api.elber3763.workers.dev/api';
+        let aktuelleKategorie = 'Allgemein';
+        let alleNotizen = [];
+        let kategorien = [];
 
-        // Dark Mode
         function initDarkMode() {
             const saved = localStorage.getItem('darkMode');
             if (saved === 'true') {
@@ -827,7 +486,19 @@
         function toggleDarkMode() {
             const isDark = document.body.classList.toggle('dark-mode');
             localStorage.setItem('darkMode', isDark);
-            document.getElementById('darkModeToggle').textContent = isDark ? '☀️' : '🌙';
+            const btn = document.getElementById('darkModeToggle');
+            btn.textContent = isDark ? '☀️' : '🌙';
+        }
+
+        function formatDate(isoString) {
+            if (!isoString) return '';
+            const date = new Date(isoString);
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = date.getFullYear();
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            return `${day}.${month}.${year}, ${hours}:${minutes}`;
         }
 
         async function apiCall(url, options = {}) {
@@ -839,34 +510,9 @@
             return fetch(url, options);
         }
 
-        // Beitritt über ?join=TOKEN prüfen
-        async function checkJoinToken() {
-            const params = new URLSearchParams(window.location.search);
-            const token = params.get('join');
-            if (!token) return;
-            try {
-                const resp = await apiCall(`${API_URL}/listen/beitreten/${token}`);
-                if (resp.ok) {
-                    const data = await resp.json();
-                    alert('Du bist der Liste erfolgreich beigetreten!');
-                    window.history.replaceState({}, document.title, window.location.pathname);
-                    loadListen();
-                } else {
-                    const msg = await resp.text();
-                    alert('Beitritt fehlgeschlagen: ' + msg);
-                }
-            } catch (e) {
-                alert('Server nicht erreichbar.');
-            }
-        }
-
         window.onload = function() {
             initDarkMode();
-            if (localStorage.getItem('token')) {
-                aktuellerBenutzerEmail = localStorage.getItem('userEmail') || '';
-                nachLogin();
-                checkJoinToken();
-            }
+            if (localStorage.getItem('token')) nachLogin();
         };
 
         async function register() {
@@ -905,11 +551,8 @@
                 if (resp.ok) {
                     const data = await resp.json();
                     localStorage.setItem('token', data.token);
-                    localStorage.setItem('userEmail', data.email);
-                    aktuellerBenutzerEmail = data.email;
                     msg.textContent = '';
                     nachLogin();
-                    checkJoinToken();
                 } else {
                     msg.textContent = 'Ungültige Anmeldedaten.';
                     msg.className = 'auth-message error';
@@ -921,458 +564,197 @@
             document.getElementById('authBox').classList.add('hidden');
             document.getElementById('logoutBtn').classList.remove('hidden');
             document.getElementById('appContent').classList.remove('hidden');
-            loadListen();
+            apiStatusAnzeigen();
+            loadKategorien();
         }
 
         function logout() {
             localStorage.removeItem('token');
-            localStorage.removeItem('userEmail');
             location.reload();
         }
 
-        // ---- Listen ----
-        async function loadListen() {
+        async function apiStatusAnzeigen() {
+            const status = document.getElementById('apiStatus');
             try {
-                const resp = await apiCall(API_URL + '/listen');
+                const resp = await apiCall(API_URL + '/notizen');
                 if (resp.ok) {
-                    listen = await resp.json();
-                    renderListen();
+                    status.textContent = '✅ Verbunden mit Cloud-Datenbank';
+                    status.className = 'api-status verbunden';
+                } else {
+                    status.textContent = '⚠️ Server antwortet nicht korrekt';
+                    status.className = 'api-status getrennt';
+                }
+            } catch {
+                status.textContent = '❌ Keine Verbindung zum Server';
+                status.className = 'api-status getrennt';
+            }
+        }
+
+        async function loadKategorien() {
+            try {
+                const resp = await apiCall(API_URL + '/kategorien');
+                if (resp.ok) {
+                    kategorien = await resp.json();
+                    if (kategorien.length === 0) kategorien = ['Allgemein', 'Arbeit', 'Privat', 'Einkaufen'];
+                    renderTabs();
+                    if (!kategorien.includes(aktuelleKategorie)) aktuelleKategorie = 'Allgemein';
+                    notizenLaden();
                 }
             } catch { }
         }
 
-        function renderListen() {
-            const container = document.getElementById('listenContainer');
+        function renderTabs() {
+            const container = document.getElementById('tabsContainer');
             container.innerHTML = '';
-            listen.forEach(liste => {
-                const isOwner = liste.is_owner == 1;
-                const div = document.createElement('div');
-                div.className = 'liste-row' + (isOwner ? '' : ' geteilt');
-
-                const span = document.createElement('span');
-                span.className = 'liste-name';
-                span.textContent = isOwner ? liste.name : '🔷 ' + liste.name;
-
-                const actions = document.createElement('div');
-                actions.className = 'liste-actions';
-
-                if (isOwner) {
-                    const shareBtn = document.createElement('button');
-                    shareBtn.textContent = '🔗';
-                    shareBtn.className = 'btn';
-                    shareBtn.title = 'Liste teilen';
-                    shareBtn.onclick = (e) => { e.stopPropagation(); openShareModal(liste.id); };
-                    actions.appendChild(shareBtn);
-                }
-
-                const delBtn = document.createElement('button');
-                delBtn.textContent = isOwner ? '🗑️' : '🚪';
-                delBtn.className = 'btn';
-                delBtn.title = isOwner ? 'Liste löschen' : 'Liste verlassen';
-                delBtn.onclick = (e) => {
-                    e.stopPropagation();
-                    if (isOwner) deleteListe(liste.id);
-                    else leaveListe(liste.id);
-                };
-                actions.appendChild(delBtn);
-
-                div.appendChild(span);
-                div.appendChild(actions);
-                div.onclick = () => oeffneListe(liste.id, liste.name);
-                container.appendChild(div);
+            kategorien.forEach(kat => {
+                const btn = document.createElement('button');
+                btn.className = 'tab-btn';
+                btn.textContent = kat;
+                btn.onclick = () => kategorieWechseln(kat);
+                if (kat === aktuelleKategorie) btn.classList.add('active');
+                container.appendChild(btn);
             });
         }
 
-        async function neueListe() {
-            const input = document.getElementById('neueListeInput');
-            const name = input.value.trim();
-            if (!name) return alert('Name eingeben!');
-            try {
-                const resp = await apiCall(API_URL + '/listen', {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name })
-                });
-                if (resp.ok) {
-                    input.value = '';
-                    await loadListen();
-                }
-            } catch { alert('Fehler.'); }
+        function kategorieWechseln(kat) {
+            aktuelleKategorie = kat;
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.textContent === kat);
+            });
+            notizenAnzeigen();
         }
 
-        async function deleteListe(id) {
-            if (!confirm('Liste wirklich löschen?')) return;
+        async function notizenLaden() {
+            const container = document.getElementById('notizListe');
+            container.innerHTML = '<p class="lade-anzeige">Lade Notizen...</p>';
             try {
-                await apiCall(API_URL + '/listen/' + id, { method: 'DELETE' });
-                await loadListen();
-            } catch { alert('Fehler beim Löschen.'); }
-        }
-
-        async function leaveListe(id) {
-            if (!confirm('Möchtest du diese Liste wirklich verlassen?')) return;
-            try {
-                await apiCall(API_URL + '/listen/' + id + '/verlassen', { method: 'DELETE' });
-                await loadListen();
-            } catch { alert('Fehler beim Verlassen.'); }
-        }
-
-        // ---- Teilen-Modal ----
-        let shareListeId = null;
-
-        async function openShareModal(listeId) {
-            shareListeId = listeId;
-            try {
-                const resp = await apiCall(API_URL + '/listen/' + listeId + '/teilen', { method: 'POST' });
-                if (resp.ok) {
-                    const data = await resp.json();
-                    document.getElementById('shareLinkInput').value = data.link;
-                } else {
-                    document.getElementById('shareLinkInput').value = 'Fehler';
-                }
+                const resp = await apiCall(API_URL + '/notizen');
+                if (!resp.ok) throw new Error('Fehler');
+                alleNotizen = await resp.json();
+                notizenAnzeigen();
             } catch {
-                document.getElementById('shareLinkInput').value = 'Server nicht erreichbar';
+                container.innerHTML = '<p class="lade-anzeige">Fehler beim Laden.</p>';
             }
-            document.getElementById('shareEmailInput').value = '';
-            document.getElementById('shareEmailResult').textContent = '';
-            document.getElementById('copyConfirmation').classList.add('hidden');
-            document.getElementById('shareModal').classList.remove('hidden');
         }
 
-        function closeShareModal() {
-            document.getElementById('shareModal').classList.add('hidden');
-        }
-
-        function copyShareLink() {
-            const input = document.getElementById('shareLinkInput');
-            input.select();
-            input.setSelectionRange(0, 99999);
-            document.execCommand('copy');
-            document.getElementById('copyConfirmation').classList.remove('hidden');
-            setTimeout(() => {
-                document.getElementById('copyConfirmation').classList.add('hidden');
-            }, 2000);
-        }
-
-        async function shareViaEmail() {
-            const email = document.getElementById('shareEmailInput').value.trim();
-            const resultDiv = document.getElementById('shareEmailResult');
-            if (!email) {
-                resultDiv.textContent = 'Bitte eine E-Mail-Adresse eingeben.';
-                resultDiv.className = 'share-email-result error';
+        function notizenAnzeigen() {
+            const container = document.getElementById('notizListe');
+            const gefiltert = alleNotizen.filter(n => (n.kategorie || 'Allgemein') === aktuelleKategorie);
+            container.innerHTML = '';
+            if (gefiltert.length === 0) {
+                container.innerHTML = '<p class="lade-anzeige">Keine Notizen in dieser Kategorie.</p>';
                 return;
             }
+            gefiltert.forEach(notiz => {
+                const div = document.createElement('div'); div.className = 'notiz-eintrag';
+                const inhaltWrapper = document.createElement('div'); inhaltWrapper.className = 'notiz-inhalt-wrapper';
 
-            try {
-                const resp = await apiCall(API_URL + '/listen/' + shareListeId + '/teilen-mit', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email: email })
-                });
-                if (resp.ok) {
-                    resultDiv.textContent = '✅ Liste erfolgreich geteilt!';
-                    resultDiv.className = 'share-email-result success';
-                    document.getElementById('shareEmailInput').value = '';
-                } else if (resp.status === 404) {
-                    resultDiv.textContent = '❌ Benutzer nicht gefunden.';
-                    resultDiv.className = 'share-email-result error';
-                } else if (resp.status === 409) {
-                    resultDiv.textContent = '❌ Liste ist bereits geteilt.';
-                    resultDiv.className = 'share-email-result error';
-                } else {
-                    resultDiv.textContent = '❌ Fehler beim Teilen.';
-                    resultDiv.className = 'share-email-result error';
-                }
-            } catch {
-                resultDiv.textContent = '❌ Server nicht erreichbar.';
-                resultDiv.className = 'share-email-result error';
-            }
-        }
+                const span = document.createElement('span'); span.className = 'notiz-text'; span.textContent = notiz.inhalt;
+                const datum = document.createElement('small'); datum.className = 'notiz-datum'; datum.textContent = formatDate(notiz.erstellt_am);
 
-        // ---- Aktivitäten-Modal ----
-        async function openAktivitaetenModal() {
-            document.getElementById('aktivitaetenModal').classList.remove('hidden');
-            const container = document.getElementById('aktivitaetenContainer');
-            container.innerHTML = 'Lade...';
-            try {
-                const resp = await apiCall(API_URL + '/listen/' + aktuelleListeId + '/aktivitaeten');
-                if (resp.ok) {
-                    const aktivitaeten = await resp.json();
-                    container.innerHTML = '';
-                    if (aktivitaeten.length === 0) {
-                        container.innerHTML = '<p>Keine Aktivitäten bisher.</p>';
-                    } else {
-                        aktivitaeten.forEach(a => {
-                            const div = document.createElement('div');
-                            div.className = 'aktivitaet-eintrag';
-                            const zeit = new Date(a.zeitpunkt).toLocaleString('de-DE');
-                            div.innerHTML = `<strong>${a.username}</strong> ${a.details} <br><small>${zeit}</small>`;
-                            container.appendChild(div);
-                        });
-                    }
-                } else {
-                    container.innerHTML = 'Fehler beim Laden.';
-                }
-            } catch {
-                container.innerHTML = 'Server nicht erreichbar.';
-            }
-        }
+                inhaltWrapper.appendChild(span);
+                inhaltWrapper.appendChild(datum);
 
-        function closeAktivitaetenModal() {
-            document.getElementById('aktivitaetenModal').classList.add('hidden');
-        }
+                const aktionenDiv = document.createElement('div'); aktionenDiv.className = 'aktionen';
 
-        // ---- Artikel ----
-        function oeffneListe(id, name) {
-            aktuelleListeId = id;
-            document.getElementById('listenView').classList.add('hidden');
-            document.getElementById('artikelView').classList.remove('hidden');
-            document.getElementById('aktuelleListeName').textContent = '📋 ' + name;
-            document.getElementById('sortSelect').value = 'created';
-            selectionMode = false;
-            selectedIds.clear();
-            updateSelectionUI();
-            loadArtikel();
-        }
+                const editBtn = document.createElement('button'); editBtn.innerHTML = '✏️'; editBtn.className = 'edit-btn';
+                editBtn.onclick = () => startEdit(notiz.id, span, datum, inhaltWrapper, aktionenDiv);
 
-        function zurueckZuListen() {
-            document.getElementById('artikelView').classList.add('hidden');
-            document.getElementById('listenView').classList.remove('hidden');
-            loadListen();
-        }
+                const loeschBtn = document.createElement('button'); loeschBtn.textContent = '✕'; loeschBtn.className = 'loesch-btn';
+                loeschBtn.onclick = () => notizLoeschen(notiz.id);
 
-        async function loadArtikel() {
-            const sort = document.getElementById('sortSelect').value;
-            try {
-                const resp = await apiCall(API_URL + '/listen/' + aktuelleListeId + '/artikel?sort=' + sort);
-                if (resp.ok) {
-                    artikel = await resp.json();
-                    selectedIds.clear();
-                    updateSelectionUI();
-                    updateFaelligBadge();
-                    renderArtikel();
-                }
-            } catch { }
-        }
-
-        function updateFaelligBadge() {
-            const heute = new Date();
-            heute.setHours(0, 0, 0, 0);
-            let count = 0;
-            artikel.forEach(a => {
-                if (a.faellig_am) {
-                    const faellig = new Date(a.faellig_am);
-                    faellig.setHours(0, 0, 0, 0);
-                    if (faellig < heute) count++;
-                }
-            });
-            const badge = document.getElementById('faelligBadge');
-            const countSpan = document.getElementById('faelligCount');
-            if (count > 0) {
-                badge.classList.remove('hidden');
-                countSpan.textContent = count;
-            } else {
-                badge.classList.add('hidden');
-            }
-        }
-
-        function filterFaellig() {
-            // Sortierung auf Fälligkeit setzen, um überfällige zuerst zu sehen
-            document.getElementById('sortSelect').value = 'faellig';
-            loadArtikel();
-        }
-
-        // ---- Bulk‑Aktionen ----
-        function toggleSelectionMode() {
-            selectionMode = !selectionMode;
-            selectedIds.clear();
-            updateSelectionUI();
-            renderArtikel();
-        }
-
-        function updateSelectionUI() {
-            const bar = document.getElementById('bulkBar');
-            const btn = document.getElementById('toggleSelectionBtn');
-            if (selectionMode) {
-                bar.classList.remove('hidden');
-                btn.textContent = '✅ Fertig';
-                btn.classList.add('btn-primary');
-            } else {
-                bar.classList.add('hidden');
-                btn.textContent = '✏️ Auswahl';
-                btn.classList.remove('btn-primary');
-            }
-            document.getElementById('selectedCount').textContent =
-                `${selectedIds.size} von ${artikel.length} ausgewählt`;
-        }
-
-        function toggleItemSelection(id) {
-            if (selectedIds.has(id)) {
-                selectedIds.delete(id);
-            } else {
-                selectedIds.add(id);
-            }
-            updateSelectionUI();
-        }
-
-        function selectAll() {
-            if (selectedIds.size === artikel.length) {
-                selectedIds.clear();
-            } else {
-                artikel.forEach(a => selectedIds.add(a.id));
-            }
-            updateSelectionUI();
-            renderArtikel();
-        }
-
-        async function bulkToggle() {
-            if (selectedIds.size === 0) return alert('Keine Artikel ausgewählt.');
-            try {
-                const resp = await apiCall(API_URL + '/artikel/batch', {
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ ids: Array.from(selectedIds), action: 'toggle' })
-                });
-                if (resp.ok) {
-                    await loadArtikel();
-                } else {
-                    alert('Fehler beim Umschalten.');
-                }
-            } catch { alert('Server nicht erreichbar.'); }
-        }
-
-        async function bulkDelete() {
-            if (selectedIds.size === 0) return alert('Keine Artikel ausgewählt.');
-            if (!confirm(`${selectedIds.size} Artikel wirklich löschen?`)) return;
-            try {
-                const resp = await apiCall(API_URL + '/artikel/batch', {
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ ids: Array.from(selectedIds), action: 'delete' })
-                });
-                if (resp.ok) {
-                    await loadArtikel();
-                } else {
-                    alert('Fehler beim Löschen.');
-                }
-            } catch { alert('Server nicht erreichbar.'); }
-        }
-
-        function renderArtikel() {
-            const container = document.getElementById('artikelContainer');
-            container.innerHTML = '';
-            artikel.forEach(a => {
-                const div = document.createElement('div');
-                let cssClass = 'artikel-item';
-                if (a.erledigt === 1) cssClass += ' erledigt';
-                // Fälligkeitsdatum prüfen
-                if (a.faellig_am) {
-                    const heute = new Date();
-                    heute.setHours(0, 0, 0, 0);
-                    const faellig = new Date(a.faellig_am);
-                    faellig.setHours(0, 0, 0, 0);
-                    if (faellig < heute) {
-                        cssClass += ' faellig';
-                    }
-                }
-                div.className = cssClass;
-
-                if (selectionMode) {
-                    const selCb = document.createElement('input');
-                    selCb.type = 'checkbox';
-                    selCb.className = 'auswahl-checkbox';
-                    selCb.checked = selectedIds.has(a.id);
-                    selCb.onclick = (e) => {
-                        e.stopPropagation();
-                        toggleItemSelection(a.id);
-                        renderArtikel();
-                    };
-                    div.appendChild(selCb);
-                }
-
-                const cb = document.createElement('input');
-                cb.type = 'checkbox';
-                cb.className = 'artikel-checkbox';
-                cb.checked = a.erledigt === 1;
-                cb.onchange = () => toggleArtikel(a.id, !cb.checked);
-
-                const span = document.createElement('span');
-                span.className = 'artikel-text' + (a.erledigt ? ' erledigt' : '');
-                span.textContent = a.name;
-
-                const menge = document.createElement('span');
-                menge.className = 'artikel-menge';
-                menge.textContent = a.menge || '';
-
-                const datumSpan = document.createElement('span');
-                datumSpan.className = 'artikel-datum';
-                if (a.faellig_am) {
-                    const d = new Date(a.faellig_am);
-                    datumSpan.textContent = '📅 ' + d.toLocaleDateString('de-DE');
-                }
-
-                // Autor anzeigen
-                const autorSpan = document.createElement('span');
-                autorSpan.className = 'artikel-autor';
-                if (a.added_by_username) {
-                    autorSpan.textContent = a.added_by_username === aktuellerBenutzerEmail ? 'von dir' : 'von ' + a.added_by_username;
-                }
-
-                const delBtn = document.createElement('button');
-                delBtn.textContent = '🗑️';
-                delBtn.className = 'btn';
-                delBtn.onclick = () => deleteArtikel(a.id);
-
-                div.appendChild(cb);
-                div.appendChild(span);
-                div.appendChild(menge);
-                div.appendChild(datumSpan);
-                div.appendChild(autorSpan);
-                if (!selectionMode) {
-                    div.appendChild(delBtn);
-                }
-
+                aktionenDiv.appendChild(editBtn);
+                aktionenDiv.appendChild(loeschBtn);
+                div.appendChild(inhaltWrapper);
+                div.appendChild(aktionenDiv);
                 container.appendChild(div);
             });
         }
 
-        async function neuerArtikel() {
-            const nameInput = document.getElementById('neuerArtikelName');
-            const mengeInput = document.getElementById('neuerArtikelMenge');
-            const faelligInput = document.getElementById('neuerArtikelFaellig');
-            const name = nameInput.value.trim();
-            const menge = mengeInput.value.trim();
-            const faellig = faelligInput.value;
-            if (!name) return alert('Name eingeben!');
+        // ---- Rest der Funktionen (startEdit, notizHinzufuegen, notizLoeschen, Export/Import) unverändert ----
+        function startEdit(id, spanElement, datumElement, wrapper, aktionenDiv) {
+            const originalText = spanElement.textContent;
+            const input = document.createElement('input');
+            input.type = 'text'; input.value = originalText;
+            input.style.width = '100%'; input.style.padding = '5px'; input.style.fontSize = '16px';
+            input.style.border = '1px solid #ccc'; input.style.borderRadius = '8px'; input.style.marginBottom = '5px';
+            spanElement.replaceWith(input);
+
+            aktionenDiv.innerHTML = '';
+            const saveBtn = document.createElement('button'); saveBtn.innerHTML = '✔️'; saveBtn.className = 'save-btn';
+            saveBtn.onclick = async () => {
+                const neuerInhalt = input.value.trim();
+                if (!neuerInhalt) { alert('Inhalt darf nicht leer sein.'); return; }
+                try {
+                    const resp = await apiCall(API_URL + '/notizen/' + id, {
+                        method: 'PUT', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ inhalt: neuerInhalt })
+                    });
+                    if (!resp.ok) throw new Error('Fehler beim Aktualisieren');
+                    const notiz = alleNotizen.find(n => n.id === id);
+                    if (notiz) notiz.inhalt = neuerInhalt;
+                    notizenAnzeigen();
+                } catch { alert('Fehler beim Speichern.'); }
+            };
+            const cancelBtn = document.createElement('button'); cancelBtn.innerHTML = '✖️'; cancelBtn.className = 'cancel-btn';
+            cancelBtn.onclick = () => notizenAnzeigen();
+            const inlineActions = document.createElement('div'); inlineActions.className = 'inline-actions';
+            inlineActions.appendChild(saveBtn); inlineActions.appendChild(cancelBtn);
+            aktionenDiv.appendChild(inlineActions);
+        }
+
+        async function notizHinzufuegen() {
+            const feld = document.getElementById('notizEingabe');
+            const inhalt = feld.value.trim();
+            if (!inhalt) return alert('Text eingeben!');
             try {
-                const resp = await apiCall(API_URL + '/listen/' + aktuelleListeId + '/artikel', {
+                const resp = await apiCall(API_URL + '/notizen', {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name, menge, faellig_am: faellig || null })
+                    body: JSON.stringify({ kategorie: aktuelleKategorie, inhalt })
                 });
-                if (resp.ok) {
-                    nameInput.value = '';
-                    mengeInput.value = '';
-                    faelligInput.value = '';
-                    await loadArtikel();
-                }
-            } catch { alert('Fehler.'); }
+                if (!resp.ok) throw new Error('Fehler');
+                await notizenLaden();
+                feld.value = '';
+            } catch { alert('Fehler beim Speichern.'); }
         }
 
-        async function toggleArtikel(id, aktuellErledigt) {
+        async function notizLoeschen(id) {
             try {
-                await apiCall(API_URL + '/artikel/' + id, {
-                    method: 'PUT', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ erledigt: !aktuellErledigt })
-                });
-                const a = artikel.find(x => x.id === id);
-                if (a) a.erledigt = !aktuellErledigt ? 1 : 0;
-                renderArtikel();
-            } catch { alert('Fehler beim Aktualisieren.'); }
-        }
-
-        async function deleteArtikel(id) {
-            try {
-                await apiCall(API_URL + '/artikel/' + id, { method: 'DELETE' });
-                await loadArtikel();
+                await apiCall(API_URL + '/notizen/' + id, { method: 'DELETE' });
+                await notizenLaden();
             } catch { alert('Fehler beim Löschen.'); }
+        }
+
+        async function notizenExportieren() {
+            try {
+                const resp = await apiCall(API_URL + '/export');
+                if (!resp.ok) throw new Error('Export fehlgeschlagen');
+                const data = await resp.json();
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a'); a.href = url; a.download = 'notizen_export.json'; a.click();
+                URL.revokeObjectURL(url);
+            } catch { alert('Fehler beim Export.'); }
+        }
+
+        async function notizenImportieren(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            try {
+                const text = await file.text();
+                const data = JSON.parse(text);
+                if (!data.notizen || !Array.isArray(data.notizen)) {
+                    alert('Ungültige Datei: "notizen" Array fehlt.'); return;
+                }
+                const resp = await apiCall(API_URL + '/import', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                const result = await resp.json();
+                alert(`${result.importiert} Notizen importiert.`);
+                await notizenLaden();
+            } catch { alert('Fehler beim Import. Bitte eine gültige JSON-Datei wählen.'); }
+            event.target.value = '';
         }
     </script>
 </body>
